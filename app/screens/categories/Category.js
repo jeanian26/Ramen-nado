@@ -48,24 +48,19 @@ export default class Category extends Component {
     let products = [];
     let filteredProducts = [];
     const dbRef = ref(getDatabase());
-    get(child(dbRef, `products/`))
+    get(child(dbRef, 'products/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           products = snapshot.val();
           products = Object.values(products);
-          console.log('converted', products);
 
           for (var i = 0; i < products.length; i++) {
             if (products[i].Category === category) {
-              console.log(products[i].name);
               filteredProducts.push(products[i]);
-              console.log(filteredProducts);
             }
           }
 
           this.setState({products: filteredProducts});
-          console.log(this.state.products);
         } else {
           console.log('No data available');
         }

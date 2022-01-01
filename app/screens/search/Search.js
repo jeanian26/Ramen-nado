@@ -117,13 +117,9 @@ export default class Search extends Component {
     get(child(dbRef, 'products/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           products = snapshot.val();
-          console.log(typeof products);
           products = Object.values(products);
-          console.log('converted', products);
           this.setState({ products: products });
-          console.log('Products', this.state.products);
         } else {
           console.log('No data available');
         }
@@ -213,7 +209,6 @@ export default class Search extends Component {
     products.forEach(function (item, index) {
       let itemName = item.name;
       if (itemName.startsWith(search)) {
-        console.log(true, itemName);
         filteredProducts.push(item);
       }
     });

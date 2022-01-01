@@ -311,18 +311,23 @@ export default class Checkout extends Component {
       orderAddress: this.state.fullAddress,
       orderUserId:user.uid,
     }).then(() => {
-      console.log('success????????????????????');
       self.showInfoModal(true);
       self.deleteCart();
     }).catch((error) => {
-      console.log(error);
     });
+
 
   }
   deleteCart(){
+    const db = getDatabase();
+
     let products = this.state.products;
     for (let i = 0; i < products.length; i++) {
-      console.log(products[i].cartID);
+      set(ref(db, `cart/${products[i].cartID}`), {
+
+      }).then(() => {
+      }).catch((error) => {
+      });
     }
   }
 
@@ -351,9 +356,7 @@ export default class Checkout extends Component {
     get(child(dbRef, `address/${user.uid}`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           const result = snapshot.val();
-          console.log(result);
           this.setState({
             address: result.str_number + result.barangay,
             city: result.city,
@@ -387,22 +390,15 @@ export default class Checkout extends Component {
           //     array.pop(index);
           //   }
           // }
-          console.log(array[0]);
           for (var i = 0; i < array.length; i++) {
-            console.log(array[i].userid, user.uid);
             if (array[i].userid === user.uid) {
               total = (total + array[i].price) * array[i].quantity;
               newArray.push(array[i]);
-              console.log(true);
             } else {
-              console.log(false);
             }
           }
           this.setState({ total: total, products: newArray });
-          console.log('THIS IS THE TOTAL', this.state.total);
-          console.log('THIS IS THE CART', this.state.products);
         } else {
-          console.log('No data available');
         }
       })
       .catch((error) => {

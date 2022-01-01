@@ -53,11 +53,8 @@ export default class Orders extends Component {
     get(child(dbRef, `order/${user.uid}`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           products = snapshot.val();
-          console.log(typeof products);
           products = Object.values(products);
-          console.log('converted', products);
           this.setState({ orders: products });
           console.log('Products', this.state.products);
         } else {
@@ -79,7 +76,6 @@ export default class Orders extends Component {
     navigation.navigate(screen);
   };
   changeDate(date) {
-    console.log(date);
     if (!date) {
       return '';
     }

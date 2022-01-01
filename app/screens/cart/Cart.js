@@ -102,15 +102,11 @@ export default class Cart extends Component {
           //     array.pop(index);
           //   }
           // }
-          console.log(array[0]);
           for (var i = 0; i < array.length; i++) {
-            console.log(array[i].userid, user.uid);
             if (array[i].userid === user.uid) {
               total = (total + array[i].price) * array[i].quantity;
               newArray.push(array[i]);
-              console.log(true);
             } else {
-              console.log(false);
             }
           }
           this.setState({ total: total, products: newArray });
@@ -152,7 +148,6 @@ export default class Cart extends Component {
     let { products } = this.state;
   };
   onPressRemove = (item) => () => {
-    console.log('Remove', item.cartID);
     let { quantity } = item;
     quantity -= 1;
 
@@ -162,13 +157,11 @@ export default class Cart extends Component {
     if (quantity === 0) {
       products = remove(products, (n) => products.indexOf(n) !== index);
       const db = ref(getDatabase());
-      console.log(item.cartID);
       set(child(db, `cart/${item.cartID}`), {});
     } else {
       products[index].quantity = quantity;
       const db = getDatabase();
       const updates = {};
-      console.log(products[index].quantity);
       updates[`cart/${item.cartID}/quantity`] = products[index].quantity;
       update(ref(db), updates);
     }
@@ -200,7 +193,6 @@ export default class Cart extends Component {
     );
     const db = getDatabase();
     const updates = {};
-    console.log(products[index].quantity);
     updates[`cart/${item.cartID}/quantity`] = products[index].quantity;
     update(ref(db), updates);
   };

@@ -152,11 +152,8 @@ export default class Home extends Component {
     get(child(dbRef, 'category/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           categories = snapshot.val();
-          console.log(typeof products);
           categories = Object.values(categories);
-          console.log('converted', categories);
           this.setState({categories: categories});
         } else {
           console.log('No data available');
@@ -177,21 +174,16 @@ export default class Home extends Component {
     get(child(dbRef, 'products/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           products = snapshot.val();
           products = Object.values(products);
-          console.log('converted', products);
 
           for (var i = 0; i < products.length; i++) {
             if (products[i].Popular === true) {
-              console.log(products[i].name);
               filteredProducts.push(products[i]);
-              console.log(filteredProducts);
             }
           }
 
           this.setState({popularProducts: filteredProducts});
-          console.log(this.state.products);
         } else {
           console.log('No data available');
         }

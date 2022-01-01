@@ -216,7 +216,6 @@ export default class EditCartProduct extends Component {
           get(child(dbRef, `products/${productID}`))
             .then((snapshot) => {
               if (snapshot.exists()) {
-                console.log(snapshot.val().price);
                 products = snapshot.val();
                 this.setState({product: products});
               } else {
@@ -242,8 +241,6 @@ export default class EditCartProduct extends Component {
     get(child(dbRef, 'cart/' + key + '/extra'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
-          console.log(Object.values(snapshot.val()));
           array = Object.values(snapshot.val());
           this.setState({extras: array});
         } else {
@@ -299,7 +296,6 @@ export default class EditCartProduct extends Component {
     const user = auth.currentUser;
     const {route} = this.props;
     const {key} = route.params;
-    console.log(key);
     const db = getDatabase();
     set(ref(db, 'cart/' + key), {
       cartID: key,
@@ -320,7 +316,6 @@ export default class EditCartProduct extends Component {
     const {product, favorite, extras} = this.state;
     const {price, description} = product;
     let loopExtras;
-    console.log(product.extra);
     if (product.extra === true) {
       loopExtras = (
         <View>

@@ -57,7 +57,7 @@ export default class Favorites extends Component {
     super(props);
 
     this.state = {
-      products: [],
+      products: sample_data.favorites_products,
     };
   }
 

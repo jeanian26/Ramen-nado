@@ -183,7 +183,6 @@ export default class EditAddress extends Component {
     get(child(dbRef, `address/${user.uid}`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           const result = snapshot.val();
           self.setState({
             number: result.str_number,

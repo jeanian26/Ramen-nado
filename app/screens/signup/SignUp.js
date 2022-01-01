@@ -161,7 +161,6 @@ export default class SignUp extends Component {
       phoneFocused: false,
       passwordFocused: false,
     });
-    console.log('test');
     createUserWithEmailAndPassword(
       passAuth(),
       this.state.email,
@@ -169,9 +168,7 @@ export default class SignUp extends Component {
     )
       .then((userCredential) => {
         const user = userCredential.user;
-        console.log(userCredential);
         if (user) {
-          console.log(user.uid);
           const db = getDatabase();
           set(ref(db, 'accounts/' + user.uid), {
             email: this.state.email,

@@ -203,15 +203,14 @@ export default class Product extends Component {
   getData() {
     const { route } = this.props;
     const { key } = route.params;
-    console.log(key);
     let products = [];
     const dbRef = ref(getDatabase());
     get(child(dbRef, `products/${key}`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val().price);
           products = snapshot.val();
           this.setState({ product: products, total: snapshot.val().price });
+          this.checkIfFavorite();
         } else {
           console.log('No data available');
         }
@@ -226,8 +225,6 @@ export default class Product extends Component {
     get(child(dbRef, 'Extra/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
-          console.log(Object.values(snapshot.val()));
           array = Object.values(snapshot.val());
           this.setState({ extras: array });
         } else {
@@ -241,6 +238,15 @@ export default class Product extends Component {
   componentDidMount() {
     this.getData();
     this.getExtra();
+
+
+    this.willFocusSubscription = this.props.navigation.addListener(
+      'willFocus',
+      () => {
+        this.getData();
+        this.getExtra();
+      }
+    );
   }
 
   navigateTo = (screen) => () => {
@@ -252,8 +258,49 @@ export default class Product extends Component {
     const { navigation } = this.props;
     navigation.goBack();
   };
+  checkIfFavorite() {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    let product = this.state.product;
+
+    const dbRef = ref(getDatabase());
+    // check if favorite
+    get(child(dbRef, `favorite/${user.uid}/${product.key}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+            this.setState({ favorite: true });
+        } else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 
   onPressAddToFavorites = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    let product = this.state.product;
+    // const dbRef = ref(getDatabase());
+    const db = getDatabase();
+    if (this.state.favorite === false) {
+      set(ref(db, `favorite/${user.uid}/${product.key}`), {
+        favorite: true,
+      }).then(() => {
+      }).catch((error) => {
+        console.log(error);
+      });
+    } else {
+      set(ref(db, `favorite/${user.uid}/${product.key}`), {
+      }).then(() => {
+      }).catch((error) => {
+        console.log(error);
+      });
+
+    }
+
+
     const { favorite } = this.state;
 
     this.setState({
@@ -283,12 +330,6 @@ export default class Product extends Component {
     const user = auth.currentUser;
     let product = this.state.product;
     if (product.stock != 0) {
-      console.log('ID:', user.uid);
-      console.log('product:', this.state.product);
-      console.log('extra:', this.state.extras);
-      console.log('total:', this.state.total);
-      console.log('stock:', product.stock);
-
       let randomID = uuid.v4();
       const db = getDatabase();
       set(ref(db, 'cart/' + randomID), {
@@ -319,7 +360,6 @@ export default class Product extends Component {
     const { product, favorite, extras } = this.state;
     const { price, description } = product;
     let loopExtras;
-    console.log(product.extra);
     if (product.extra === true) {
       loopExtras = (
         <View>

@@ -101,14 +101,11 @@ export default class Categories extends Component {
   getData() {
     let categories = [];
     const dbRef = ref(getDatabase());
-    get(child(dbRef, `category/`))
+    get(child(dbRef, 'category/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           categories = snapshot.val();
-          console.log(typeof products);
           categories = Object.values(categories);
-          console.log('converted', categories);
           this.setState({categories: categories});
         } else {
           console.log('No data available');

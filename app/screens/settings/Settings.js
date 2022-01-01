@@ -173,21 +173,18 @@ export default class Settings extends Component {
     const auth = getAuth();
     const user = auth.currentUser;
     const self = this;
-    console.log(user.uid);
     if (user !== null) {
       user.providerData.forEach((profile) => {
         // this.setState({name: profile.displayName});
         this.setState({email: profile.email});
       });
 
-      console.log('USer ID', user.uid);
       this.setState({uid:user.uid});
       const dbRef = refData(getDatabase());
       get(child(dbRef, `accounts/${user.uid}`))
         .then((snapshot) => {
           if (snapshot.exists()) {
             let result = snapshot.val();
-            console.log(result);
             this.setState({ name: result.name});
           } else {
             console.log('No data available');
@@ -209,7 +206,6 @@ export default class Settings extends Component {
     get(child(dbRef, `address/${user.uid}`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           const result = snapshot.val();
           self.setState({
             number: result.str_number,

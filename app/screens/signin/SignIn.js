@@ -168,7 +168,6 @@ export default class SignIn extends Component {
     )
       .then((userCredential) => {
         const user = userCredential.user;
-        console.log('Success');
         navigation.navigate('HomeNavigator');
         checkLoggedIn();
         ToastAndroid.showWithGravity(
@@ -276,7 +275,7 @@ export default class SignIn extends Component {
 
             <TouchableWithoutFeedback>
               <View style={styles.footer}>
-                <Text></Text>
+                <Text />
               </View>
             </TouchableWithoutFeedback>
           </View>

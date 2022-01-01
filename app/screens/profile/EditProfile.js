@@ -112,14 +112,12 @@ export default class EditProfile extends Component {
   saveProfile() {
     const { navigation } = this.props;
     // const auth = getAuth();
-    // // console.log(auth.currentUser);
     // updateProfile('auth currentuser', auth.currentUser, {
     //   displayName: this.state.name,
     //   phoneNumber: '+1235467',
     //   email: this.state.email,
     // })
     //   .then(() => {
-    //     console.log('updated');
     //     navigation.navigate('Settings');
     //   })
     //   .catch((error) => {
@@ -196,16 +194,11 @@ export default class EditProfile extends Component {
     const self = this;
 
     launchImageLibrary(options, (res) => {
-      console.log('Response = ', res);
       if (res.didCancel) {
-        console.log('User cancelled image picker');
       } else if (res.error) {
-        console.log('ImagePicker Error: ', res.error);
       } else if (res.customButton) {
-        console.log('User tapped custom button: ', res.customButton);
         alert(res.customButton);
       } else {
-        console.log('response', JSON.stringify(res));
         const uri = res.assets[0].uri;
         this.uploadImage(uri);
         self.setState({
@@ -227,14 +220,12 @@ export default class EditProfile extends Component {
         // this.setState({name: profile.displayName});
         this.setState({ email: profile.email });
       });
-      console.log('USer ID', user.uid);
       this.setState({ uid: user.uid });
       const dbRef = refData(getDatabase());
       get(child(dbRef, `accounts/${user.uid}`))
         .then((snapshot) => {
           if (snapshot.exists()) {
             let result = snapshot.val();
-            console.log(result);
             this.setState({ name: result.name, phone: result.phone });
           } else {
             console.log('No data available');
@@ -247,10 +238,8 @@ export default class EditProfile extends Component {
 
 
     const storage = getStorage();
-    console.log('UID', user.uid);
     getDownloadURL(ref(storage, `profile_images/${user.uid}.jpg`))
       .then((url) => {
-        console.log(url);
         this.setState({ uri: url });
         global.USERID = user.id;
       })
@@ -266,17 +255,14 @@ export default class EditProfile extends Component {
         resolve(xhr.response);
       };
       xhr.onerror = function (e) {
-        console.log(e);
         reject(new TypeError('Network request failed'));
       };
       xhr.responseType = 'blob';
       xhr.open('GET', uri, true);
       xhr.send(null);
     });
-    console.log(global.USERID);
     const auth = getAuth();
     const user = auth.currentUser;
-    console.log(user.uid);
     const filename = user.uid + '.jpg';
     const storage = getStorage();
     const metadata = {

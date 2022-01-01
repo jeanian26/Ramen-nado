@@ -111,6 +111,7 @@ export default class EditAddress extends Component {
       userID: '',
       min:'0',
       max:'100',
+      count:'1',
     };
   }
 
@@ -179,6 +180,7 @@ export default class EditAddress extends Component {
       messageTitle,
       min,
       max,
+      count,
     } = this.state;
 
     return (
@@ -230,6 +232,25 @@ export default class EditAddress extends Component {
                 focusedBorderColor={INPUT_FOCUSED_BORDER_COLOR}
               />
             </View>
+            <View style={styles.inputContainer}>
+              <UnderlineTextInput
+                onRef={(r) => {
+                  this.zip = r;
+                }}
+                value={(count)}
+                onChangeText={this.onChangeText('count')}
+                onFocus={this.onFocus('streetFocused')}
+                onSubmitEditing={this.focusOn(this.district)}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                placeholder="Number of People"
+                placeholderTextColor={PLACEHOLDER_TEXT_COLOR}
+                inputTextColor={INPUT_TEXT_COLOR}
+                borderColor={INPUT_BORDER_COLOR}
+                focusedBorderColor={INPUT_FOCUSED_BORDER_COLOR}
+              />
+            </View>
+
 
             <View style={styles.inputContainer} />
 

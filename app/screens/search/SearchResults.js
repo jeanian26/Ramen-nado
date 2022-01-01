@@ -7,9 +7,10 @@
  */
 
 import React, { Component } from 'react';
-import { FlatList, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { FlatList, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import { getDatabase, ref, child, get, set } from 'firebase/database';
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
+import {Paragraph} from '../../components/text/CustomText';
 
 import Colors from '../../theme/colors';
 
@@ -25,6 +26,17 @@ const styles = StyleSheet.create({
   productList: {
     padding: 12,
   },
+  instructionContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  instruction: {
+    marginTop: 20,
+    marginBottom:20,
+    paddingHorizontal: 32,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
 
 export default class SearchResults extends Component {
@@ -33,12 +45,12 @@ export default class SearchResults extends Component {
 
     this.state = {
       products: sample_data.search_products,
-      min:0,
-      max:0,
+      min: 0,
+      max: 0,
     };
   }
 
-  navigateTo = (screen,key) => () => {
+  navigateTo = (screen, key) => () => {
     const { navigation } = this.props;
     navigation.navigate(screen, {
       key: key,
@@ -65,11 +77,9 @@ export default class SearchResults extends Component {
   componentDidMount() {
     const { route } = this.props;
     const { min, max } = route.params;
-    console.log('Min', min);
-    console.log('Max', max);
     this.setState({
-      min:min,
-      max:max,
+      min: min,
+      max: max,
     });
     this.getData();
   }
@@ -80,13 +90,9 @@ export default class SearchResults extends Component {
     get(child(dbRef, 'products/'))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           products = snapshot.val();
-          console.log(typeof products);
           products = Object.values(products);
-          console.log('converted', products);
           this.setState({ products: products });
-          console.log('Products', this.state.products);
         } else {
           console.log('No data available');
         }
@@ -112,7 +118,6 @@ export default class SearchResults extends Component {
   keyExtractor = (item, index) => index.toString();
 
   renderProductItem = ({ item, index }) => {
-    console.log(this.state.min);
     if (item.price >= this.state.min) {
       return (
         <ActionProductCardHorizontal
@@ -129,7 +134,7 @@ export default class SearchResults extends Component {
           // quantity={item.quantity}
           // discountPercentage={item.discountPercentage}
           label={item.label}
-          // cartButton={false}
+        // cartButton={false}
         />
       );
     }
@@ -144,6 +149,9 @@ export default class SearchResults extends Component {
           backgroundColor={Colors.statusBarColor}
           barStyle="dark-content"
         />
+          <Paragraph style={styles.instruction}>
+            Input your price range
+          </Paragraph>
 
         <FlatList
           data={products}
