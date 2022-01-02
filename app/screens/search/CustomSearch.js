@@ -143,7 +143,7 @@ export default class EditAddress extends Component {
   };
   navigateTo = (screen) => () => {
     const { navigation } = this.props;
-    navigation.navigate(screen, {min:this.state.min, max:this.state.max});
+    navigation.navigate(screen, {min:this.state.min, max:this.state.max, count:this.state.count});
   };
 
 

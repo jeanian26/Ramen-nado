@@ -47,6 +47,8 @@ export default class SearchResults extends Component {
       products: sample_data.search_products,
       min: 0,
       max: 0,
+      count:0,
+      budget:0,
     };
   }
 
@@ -75,16 +77,22 @@ export default class SearchResults extends Component {
   };
 
   componentDidMount() {
-    const { route } = this.props;
-    const { min, max } = route.params;
-    this.setState({
-      min: min,
-      max: max,
-    });
     this.getData();
   }
 
   getData() {
+    const { route } = this.props;
+    const { min, max,count } = route.params;
+    let budget = max / count;
+
+    this.setState({
+      min: min,
+      max: max,
+      count:count,
+      budget:budget,
+    });
+    this.setState({});
+    console.log(count);
     let products = [];
     const dbRef = ref(getDatabase());
     get(child(dbRef, 'products/'))
@@ -118,7 +126,9 @@ export default class SearchResults extends Component {
   keyExtractor = (item, index) => index.toString();
 
   renderProductItem = ({ item, index }) => {
-    if (item.price >= this.state.min) {
+    let name = `${item.name} X ${this.state.count} `;
+    let price = item.price * this.state.count;
+    if (item.price <= this.state.budget && item.Category !== 'Drinks') {
       return (
         <ActionProductCardHorizontal
           onPress={this.navigateTo('Product', item.key)}
@@ -128,9 +138,9 @@ export default class SearchResults extends Component {
           swipeoutDisabled
           key={index}
           imageUri={item.imageUri}
-          title={item.name}
+          title= {name}
           description={item.description}
-          price={item.price}
+          price={price}
           // quantity={item.quantity}
           // discountPercentage={item.discountPercentage}
           label={item.label}
@@ -141,7 +151,7 @@ export default class SearchResults extends Component {
   }
 
   render() {
-    const { products } = this.state;
+    const { products,min,max,count,budget } = this.state;
 
     return (
       <SafeAreaView style={styles.container}>
@@ -150,7 +160,7 @@ export default class SearchResults extends Component {
           barStyle="dark-content"
         />
           <Paragraph style={styles.instruction}>
-            Input your price range
+            You have a max budget of ₱{max} for {count} person. With an Average budget of ₱{budget} per person
           </Paragraph>
 
         <FlatList

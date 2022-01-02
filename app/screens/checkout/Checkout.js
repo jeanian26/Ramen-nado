@@ -17,6 +17,8 @@ import {
   View,
   Text,
   ImageBackground,
+  Linking,
+  AppState,
 } from 'react-native';
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -196,11 +198,15 @@ export default class Checkout extends Component {
       cityFocused: false,
       zipFocused: false,
       infoModalVisible: false,
-      paypal: true,
-      cod: false,
+      paypal: false,
+      cod: true,
       products: [],
       total: 0.0,
       fullAddress: '',
+      access_token: '',
+      paypalData: {},
+      paypalStatus: 'Pay on Paypal',
+      appState: AppState.currentState,
     };
   }
 
@@ -287,6 +293,81 @@ export default class Checkout extends Component {
   previousStep = () => {
     this.swiper.scrollBy(-1, true);
   };
+  fetchPaypalAccessToken() {
+    let PAYPAL_API_ENDPOINT = 'https://api-m.sandbox.paypal.com';
+    var myHeaders = new Headers();
+    myHeaders.append('Accept-Language', 'en_US');
+    myHeaders.append('Accept', 'application/json');
+    myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
+    myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
+
+    var urlencoded = new URLSearchParams();
+    urlencoded.append('grant_type', 'client_credentials');
+
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      // body: urlencoded,
+      redirect: 'follow',
+    };
+
+    fetch(`${PAYPAL_API_ENDPOINT}/v1/oauth2/token?grant_type=client_credentials`, requestOptions)
+      .then(response => response.text())
+      .then((result) => {
+        console.log(JSON.parse(result).access_token);
+        let access_token = JSON.parse(result).access_token;
+        this.setState({ access_token: access_token });
+
+      })
+      .catch(error => console.log('error', error));
+
+    var myHeaders = new Headers();
+    myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
+    myHeaders.append('Content-Type', 'application/json');
+
+    var raw = JSON.stringify({
+      'intent': 'CAPTURE',
+      'application_context': {
+        'return_url': 'https://example.com',
+        'cancel_url': 'https://example.com',
+      },
+      'purchase_units': [
+        {
+          'reference_id': 'test',
+          'amount': {
+            'currency_code': 'PHP',
+            'value': this.state.total,
+          },
+        },
+      ],
+    });
+
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow',
+    };
+
+    fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders', requestOptions)
+      .then(response => response.text())
+      .then((result) => {
+
+
+        let data = JSON.parse(result);
+        console.log(data.links[1]);
+        this.setState({ paypalData: data });
+        Linking.openURL(data.links[1].href)
+          .catch(err => {
+            console.error('Failed opening page because: ', err);
+            alert('Failed to open page');
+          });
+
+
+
+      })
+      .catch(error => console.log('error', error));
+  }
 
   confirmOrder() {
     const db = getDatabase();
@@ -297,6 +378,8 @@ export default class Checkout extends Component {
     }
     else {
       orderPayment = 'Paypal';
+      // this.fetchPaypalAccessToken();
+
     }
 
     const auth = getAuth();
@@ -448,6 +531,7 @@ export default class Checkout extends Component {
   componentDidMount() {
     this.getAddress();
     this.getCart();
+    // this.fetchPaypalAccessToken();
     this.willFocusSubscription = this.props.navigation.addListener(
       'willFocus',
       () => {
@@ -455,10 +539,59 @@ export default class Checkout extends Component {
         this.cart();
       }
     );
+
+    this.appStateSubscription = AppState.addEventListener(
+      'change',
+      nextAppState => {
+        if (
+          this.state.appState.match(/inactive|background/) &&
+          nextAppState === 'active'
+        ) {
+          //Check if Paypal is paid when alt tab
+          this.checkPaypal();
+          console.log('App has come to the foreground!');
+        }
+        this.setState({ appState: nextAppState });
+      }
+    );
   }
 
   componentWillUnmount() {
     this.willFocusSubscription();
+  }
+  checkPaypal() {
+    // let PAYPAL_API_ENDPOINT = 'https://api.sandbox.paypal.com';
+    console.log('TOKEN', this.state.access_token);
+    console.log('ID', this.state.paypalData.id);
+    let access_token = this.state.access_token;
+    let orderID = this.state.paypalData.id;
+    // var myHeaders = new Headers();
+    fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+        'Paypal-Request-Id': '7b92603e-77ed-4896-8e78-5dea2050476a',
+      },
+      method: 'POST',
+    })
+      .then(response => response.text())
+      .then((result) => {
+        let data = JSON.parse(result);
+        console.log(data);
+        if (data.status === 'COMPLETED'){
+          this.setState({paypalStatus:data.status});
+          this.confirmOrder();
+        }
+      })
+      .catch(error => console.log('error', error));
+  }
+
+  checkifPayedInPaypal() {
+    if (this.state.paypalStatus === 'Pay on Paypal' && this.state.paypal === true) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 
@@ -475,6 +608,7 @@ export default class Checkout extends Component {
       infoModalVisible,
       paypal,
       cod,
+      paypalStatus,
     } = this.state;
 
     return (
@@ -639,6 +773,18 @@ export default class Checkout extends Component {
             </Swiper>
 
             <View style={styles.buttonContainer}>
+              {paypal === true && paypalStatus === 'Pay on Paypal' && (
+                <Button
+                  disabled={!this.checkifPayedInPaypal}
+                  onPress={() => this.fetchPaypalAccessToken()}
+                  title={paypalStatus}
+                />
+              )}
+
+
+            </View>
+
+            <View style={styles.buttonContainer}>
               {activeIndex < 1 && (
                 <Button
                   onPress={isRTL ? this.previousStep : this.nextStep}
@@ -647,7 +793,10 @@ export default class Checkout extends Component {
               )}
 
               {activeIndex === 1 && (
+
+
                 <Button
+                  disabled={this.checkifPayedInPaypal()}
                   onPress={() => this.confirmOrder()}
                   title="Place Order"
                 />
