@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-import React, {Component, Fragment} from 'react';
+import React, { Component, Fragment } from 'react';
 import {
   FlatList,
   I18nManager,
@@ -12,9 +12,12 @@ import {
 import remove from 'lodash/remove';
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
 import EmptyState from '../../components/emptystate/EmptyState';
-import {Heading6, SmallText} from '../../components/text/CustomText';
+import { Heading6, SmallText } from '../../components/text/CustomText';
 import Colors from '../../theme/colors';
 import sample_data from '../../config/sample-data';
+import { onAuthStateChanged, getAuth, updateProfile } from 'firebase/auth';
+import { getDatabase, ref, child, get, set } from 'firebase/database';
+import { cos } from 'react-native-reanimated';
 
 const isRTL = I18nManager.isRTL;
 const EMPTY_STATE_ICON = 'star-outline';
@@ -57,17 +60,20 @@ export default class Favorites extends Component {
     super(props);
 
     this.state = {
-      products: sample_data.favorites_products,
+      products: [],
     };
   }
 
-  navigateTo = (screen) => () => {
-    const {navigation} = this.props;
+  navigateTo = (screen, key) => () => {
+    const { navigation } = this.props;
     navigation.navigate(screen);
+    navigation.navigate(screen, {
+      key: key,
+    });
   };
 
   swipeoutOnPressRemove = (item) => () => {
-    let {products} = this.state;
+    let { products } = this.state;
     const index = products.indexOf(item);
 
     products = remove(products, (n) => products.indexOf(n) !== index);
@@ -77,11 +83,67 @@ export default class Favorites extends Component {
     });
   };
 
+  componentDidMount = () => {
+    this.getData();
+
+    this.focusListener = this.props.navigation.addListener('focus', () => {
+      this.getData();
+    });
+  };
+
+  getData() {
+    this.setState({products:[]});
+    const auth = getAuth();
+    const user = auth.currentUser;
+    let products = [];
+    const dbRef = ref(getDatabase());
+    console.log(user.uid);
+    get(child(dbRef, `favorite/${user.uid}`))
+      .then((snapshot) => {
+
+        if (snapshot.exists()) {
+          products = snapshot.val();
+          console.log(products);
+          Object.entries(products).forEach(([key, value]) => {
+            console.log(key);
+            this.getProductDetails(key);
+          });
+
+        } else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+  getProductDetails(item, arrayProduct) {
+    // console.log(this.state.products);
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, `products/${item}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          console.log(snapshot.val());
+          let result = snapshot.val();
+          result.id = result.key;
+          console.log(result);
+          this.setState({ products: [...this.state.products, result] });
+          // this.setState({products:arrayProduct});
+        } else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+  }
+
   onPressRemove = (item) => () => {
-    let {quantity} = item;
+    let { quantity } = item;
     quantity -= 1;
 
-    const {products} = this.state;
+    const { products } = this.state;
     const index = products.indexOf(item);
 
     if (quantity < 0) {
@@ -95,8 +157,8 @@ export default class Favorites extends Component {
   };
 
   onPressAdd = (item) => () => {
-    const {quantity} = item;
-    const {products} = this.state;
+    const { quantity } = item;
+    const { products } = this.state;
 
     const index = products.indexOf(item);
     products[index].quantity = quantity + 1;
@@ -108,26 +170,23 @@ export default class Favorites extends Component {
 
   keyExtractor = (item) => item.id.toString();
 
-  renderProductItem = ({item}) => (
+  renderProductItem = ({ item }) => (
     <ActionProductCardHorizontal
       key={item.id}
-      onPress={this.navigateTo('Product')}
+      onPress={this.navigateTo('Product',item.id)}
       onPressRemove={this.onPressRemove(item)}
       onPressAdd={this.onPressAdd(item)}
       imageUri={item.imageUri}
       title={item.name}
       price={item.price}
-      quantity={item.quantity}
-      discountPercentage={item.discountPercentage}
-      label={item.label}
-      swipeoutDisabled={false}
+      swipeoutDisabled={true}
       swipeoutOnPressRemove={this.swipeoutOnPressRemove(item)}
       cartButton={true}
     />
   );
 
   render() {
-    const {products} = this.state;
+    const { products } = this.state;
 
     return (
       <SafeAreaView style={styles.container}>
@@ -151,13 +210,13 @@ export default class Favorites extends Component {
               contentContainerStyle={styles.productList}
             />
 
-            <View style={styles.bottomTextInfo}>
+            {/* <View style={styles.bottomTextInfo}>
               <View style={styles.info}>
                 <SmallText>
                   {`Swipe ${isRTL ? 'right' : 'left'} to remove items`}
                 </SmallText>
               </View>
-            </View>
+            </View> */}
           </Fragment>
         )}
       </SafeAreaView>

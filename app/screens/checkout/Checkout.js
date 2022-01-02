@@ -30,7 +30,7 @@ import LinkButton from '../../components/buttons/LinkButton';
 import { Caption, Subtitle1, Subtitle2 } from '../../components/text/CustomText';
 import UnderlineTextInput from '../../components/textinputs/UnderlineTextInput';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, child, get, set } from 'firebase/database';
+import { getDatabase, ref, child, get, set, update } from 'firebase/database';
 import TouchableItem from '../../components/TouchableItem';
 import uuid from 'react-native-uuid';
 
@@ -200,7 +200,7 @@ export default class Checkout extends Component {
       cod: false,
       products: [],
       total: 0.0,
-      fullAddress:'',
+      fullAddress: '',
     };
   }
 
@@ -290,7 +290,6 @@ export default class Checkout extends Component {
 
   confirmOrder() {
     const db = getDatabase();
-    const self = this;
     let randomID = Date.now();
     let orderPayment;
     if (this.state.cod === true) {
@@ -309,16 +308,46 @@ export default class Checkout extends Component {
       orderItems: this.state.products,
       orderPayment: orderPayment,
       orderAddress: this.state.fullAddress,
-      orderUserId:user.uid,
+      orderUserId: user.uid,
     }).then(() => {
-      self.showInfoModal(true);
-      self.deleteCart();
+      this.updateStocks();
+      this.showInfoModal(true);
+      this.deleteCart();
     }).catch((error) => {
+      console.log(error);
     });
-
-
   }
-  deleteCart(){
+  updateStocks() {
+    let products = this.state.products;
+    for (let item in products) {
+      console.log('Product ID', products[item].id);
+      console.log('Quantity', products[item].quantity);
+      //Get the current Stocks Count
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const dbRef = ref(getDatabase());
+      get(child(dbRef, `products/${products[item].id}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const result = snapshot.val();
+            const stock = result.stock;
+            const db = getDatabase();
+            const updates = {};
+            updates[`products/${products[item].id}/stock`] = stock - products[item].quantity;
+            update(ref(db), updates);
+
+          } else {
+            console.log('No data available');
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+    }
+  }
+
+  deleteCart() {
     const db = getDatabase();
 
     let products = this.state.products;
