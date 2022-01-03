@@ -169,7 +169,6 @@ export default class SignUp extends Component {
       .then((userCredential) => {
         const user = userCredential.user;
         if (user) {
-          const db = getDatabase();
           set(ref(db, 'accounts/' + user.uid), {
             email: this.state.email,
             phone:this.state.phone,

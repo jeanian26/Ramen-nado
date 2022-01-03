@@ -153,12 +153,12 @@ const OrderItem = ({
             <Subtitle2 style={styles.pending}>Pending delivery</Subtitle2>
           </View>
 
-          <Button
+          {/* <Button
             color={Colors.primaryColor}
             title="Cancel"
             titleColor={Colors.white}
             buttonStyle={styles.extraSmallButton}
-          />
+          /> */}
         </View>
       )}
 
