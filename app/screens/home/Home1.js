@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   FlatList,
   ImageBackground,
@@ -13,13 +13,16 @@ import {
   View,
   Image,
   Button,
+  BackHandler,
+  ToastAndroid,
+  Alert,
 } from 'react-native';
-import {getDatabase, ref, child, get, set} from 'firebase/database';
+import { getDatabase, ref, child, get, set } from 'firebase/database';
 import getImgSource from '../../utils/getImgSource.js';
 
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
 import LinkButton from '../../components/buttons/LinkButton';
-import {Heading6, Heading4, Heading5, Paragraph} from '../../components/text/CustomText';
+import { Heading6, Heading4, Heading5, Paragraph } from '../../components/text/CustomText';
 import TouchableItem from '../../components/TouchableItem';
 
 import Colors from '../../theme/colors';
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     paddingLeft: 5,
   },
-  cardImg: {borderRadius: 4},
+  cardImg: { borderRadius: 4 },
   card: {
     marginLeft: 4,
     width: 110,
@@ -109,7 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: {width: -1, height: 1},
+    textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
     backgroundColor: Colors.primaryLightColor,
   },
@@ -123,7 +126,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingTop: 10,
-    paddingBottom:15,
+    paddingBottom: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -154,7 +157,7 @@ export default class Home extends Component {
         if (snapshot.exists()) {
           categories = snapshot.val();
           categories = Object.values(categories);
-          this.setState({categories: categories});
+          this.setState({ categories: categories });
         } else {
           console.log('No data available');
         }
@@ -163,9 +166,35 @@ export default class Home extends Component {
         console.error(error);
       });
   }
+
   componentDidMount() {
+
     this.getCategories();
     this.getMostPopular();
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.backAction
+    );
+
+
+  }
+  backAction = () => {
+    const { navigation } = this.props;
+    console.log(navigation);
+    if (navigation.isFocused()) {
+      Alert.alert('Hold on!', 'Are you sure you want to exit?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    }
+  };
+  componentWillUnmount() {
+    this.backHandler.remove();
   }
   getMostPopular() {
     let products = [];
@@ -183,7 +212,7 @@ export default class Home extends Component {
             }
           }
 
-          this.setState({popularProducts: filteredProducts});
+          this.setState({ popularProducts: filteredProducts });
         } else {
           console.log('No data available');
         }
@@ -193,19 +222,19 @@ export default class Home extends Component {
       });
   }
   navigateTo = (screen, name) => () => {
-    const {navigation} = this.props;
-    navigation.navigate(screen, {category: name});
+    const { navigation } = this.props;
+    navigation.navigate(screen, { category: name });
   };
   navigateToProduct = (screen, name) => () => {
-    const {navigation} = this.props;
-    navigation.navigate(screen, {key: name});
+    const { navigation } = this.props;
+    navigation.navigate(screen, { key: name });
   };
 
   onPressRemove = (item) => () => {
-    let {quantity} = item;
+    let { quantity } = item;
     quantity -= 1;
 
-    const {popularProducts} = this.state;
+    const { popularProducts } = this.state;
     const index = popularProducts.indexOf(item);
 
     if (quantity < 0) {
@@ -219,8 +248,8 @@ export default class Home extends Component {
   };
 
   onPressAdd = (item) => () => {
-    const {quantity} = item;
-    const {popularProducts} = this.state;
+    const { quantity } = item;
+    const { popularProducts } = this.state;
 
     const index = popularProducts.indexOf(item);
     popularProducts[index].quantity = quantity + 1;
@@ -232,7 +261,7 @@ export default class Home extends Component {
 
   keyExtractor = (item, index) => index.toString();
 
-  renderCategoryItem = ({item, index}) => (
+  renderCategoryItem = ({ item, index }) => (
     <ImageBackground
       key={index}
       defaultSource={imgHolder}
@@ -243,7 +272,7 @@ export default class Home extends Component {
         <TouchableItem
           onPress={this.navigateTo('Category', item.name)}
           style={styles.cardContainer}
-          // borderless
+        // borderless
         >
           <Text style={styles.cardTitle}>{item.name}</Text>
         </TouchableItem>
@@ -251,7 +280,7 @@ export default class Home extends Component {
     </ImageBackground>
   );
 
-  renderPopularProductItem = ({item, index}) => (
+  renderPopularProductItem = ({ item, index }) => (
     <ActionProductCardHorizontal
       onPress={this.navigateToProduct('Product', item.key)}
       onPressRemove={this.onPressRemove(item)}
@@ -270,7 +299,7 @@ export default class Home extends Component {
   );
 
   render() {
-    const {categories, popularProducts} = this.state;
+    const { categories, popularProducts } = this.state;
 
     return (
       <SafeAreaView style={styles.screenContainer}>
@@ -279,25 +308,26 @@ export default class Home extends Component {
           <ScrollView>
             <View>
               <View style={{
-                padding:20,
-                paddingTop:30,
-                textAlign:'center',
-                alignContent:'center',
-                alignItems:'center',
-                backgroundColor:Colors.primaryColor,
+                padding: 20,
+                paddingTop: 30,
+                textAlign: 'center',
+                alignContent: 'center',
+                alignItems: 'center',
+                backgroundColor: Colors.primaryColor,
               }}>
                 <View style={styles.logoContainer}>
-                  <Logo logoStyle={{borderRadius: 100}} size={96} />
+                  <Logo logoStyle={{ borderRadius: 100 }} size={96} />
                 </View>
                 <Heading5 style={{
-                  color:'white',
-                  fontWeight:'700',
-                  paddingTop:10}}>Ramen Nado</Heading5>
+                  color: 'white',
+                  fontWeight: '700',
+                  paddingTop: 10,
+                }}>Ramen Nado</Heading5>
                 <Text style={{
-                    paddingTop:15,
-                    color:'white',
-                  }}>Cant pick the right Ramen for you?</Text>
-                <Text style={{color:'white'}}>Let me help</Text>
+                  paddingTop: 15,
+                  color: 'white',
+                }}>Cant pick the right Ramen for you?</Text>
+                <Text style={{ color: 'white' }}>Let me help</Text>
                 <View style={styles.buttonContainer}>
                   <Button
                     onPress={this.navigateTo('CustomSearch')}
@@ -336,7 +366,7 @@ export default class Home extends Component {
                       keyExtractor={this.keyExtractor}
                       renderItem={this.renderCategoryItem}
                       contentContainerStyle={
-                        (styles.categoriesList, {marginBottom: 10})
+                        (styles.categoriesList, { marginBottom: 10 })
                       }
                     />
                   </View>
@@ -344,7 +374,7 @@ export default class Home extends Component {
               </View>
             </View>
             <View style={styles.titleContainer}>
-              <Heading6 style={(styles.titleText, {paddingTop: 10})}>
+              <Heading6 style={(styles.titleText, { paddingTop: 10 })}>
                 Most Popular
               </Heading6>
             </View>
