@@ -207,6 +207,7 @@ export default class Checkout extends Component {
       paypalData: {},
       paypalStatus: 'Pay on Paypal',
       appState: AppState.currentState,
+      PAYPAL_API_ENDPOINT: 'https://api.paypal.com',
     };
   }
 
@@ -294,12 +295,15 @@ export default class Checkout extends Component {
     this.swiper.scrollBy(-1, true);
   };
   fetchPaypalAccessToken() {
-    let PAYPAL_API_ENDPOINT = 'https://api-m.sandbox.paypal.com';
+    let PAYPAL_API_ENDPOINT = this.state.PAYPAL_API_ENDPOINT;
     var myHeaders = new Headers();
     myHeaders.append('Accept-Language', 'en_US');
     myHeaders.append('Accept', 'application/json');
     myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
-    myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
+       // live
+       myHeaders.append('Authorization', 'Basic QVpKajhla3FiQ0FBVGM0TUgwRlJ0TUVQWF9EV2RmZDlFbjVlVlBSUzFmOFlyNzJHQy12MEVSSDk5cFNFUUNXVU1vWUFyaWN6S2pvYzFpYlk6RUV4RkZ1X2Y0anQtbWp6M1pLb09kRGtfWXRrcEFGamNwNDBEU011c1lCRlRPSWZtUWQ0aEMydWs5ZW5aMDNWb3dOY2xEUXVaRVRlWFNleEY=');
+       // sandbox
+    //  myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
     var urlencoded = new URLSearchParams();
     urlencoded.append('grant_type', 'client_credentials');
@@ -322,14 +326,17 @@ export default class Checkout extends Component {
       .catch(error => console.log('error', error));
 
     var myHeaders = new Headers();
-    myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
     myHeaders.append('Content-Type', 'application/json');
+    // live
+    myHeaders.append('Authorization', 'Basic QVpKajhla3FiQ0FBVGM0TUgwRlJ0TUVQWF9EV2RmZDlFbjVlVlBSUzFmOFlyNzJHQy12MEVSSDk5cFNFUUNXVU1vWUFyaWN6S2pvYzFpYlk6RUV4RkZ1X2Y0anQtbWp6M1pLb09kRGtfWXRrcEFGamNwNDBEU011c1lCRlRPSWZtUWQ0aEMydWs5ZW5aMDNWb3dOY2xEUXVaRVRlWFNleEY=');
+      // sandbox
+    // myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
     var raw = JSON.stringify({
       'intent': 'CAPTURE',
       'application_context': {
-        'return_url': 'https://example.com',
-        'cancel_url': 'https://example.com',
+        'return_url': 'https://ramen-nado-86f76.web.app/paypal/Success',
+        'cancel_url': 'https://ramen-nado-86f76.web.app/paypal/Failed',
       },
       'purchase_units': [
         {
@@ -349,13 +356,12 @@ export default class Checkout extends Component {
       redirect: 'follow',
     };
 
-    fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders', requestOptions)
+    fetch(`${PAYPAL_API_ENDPOINT}/v2/checkout/orders`, requestOptions)
       .then(response => response.text())
       .then((result) => {
 
 
         let data = JSON.parse(result);
-        console.log(data.links[1]);
         this.setState({ paypalData: data });
         Linking.openURL(data.links[1].href)
           .catch(err => {
@@ -378,7 +384,6 @@ export default class Checkout extends Component {
     }
     else {
       orderPayment = 'Paypal';
-      // this.fetchPaypalAccessToken();
 
     }
 
@@ -495,13 +500,6 @@ export default class Checkout extends Component {
       .then((snapshot) => {
         if (snapshot.exists()) {
           array = Object.values(snapshot.val());
-          // for (const index in array) {
-          //   if (array[index].userid === user.uid) {
-          //     total = (total + array[index].price) * array[index].quantity;
-          //   } else {
-          //     array.pop(index);
-          //   }
-          // }
           for (var i = 0; i < array.length; i++) {
             if (array[i].userid === user.uid) {
               total = (total + array[i].price) * array[i].quantity;
@@ -560,13 +558,13 @@ export default class Checkout extends Component {
     this.willFocusSubscription();
   }
   checkPaypal() {
-    // let PAYPAL_API_ENDPOINT = 'https://api.sandbox.paypal.com';
+    let PAYPAL_API_ENDPOINT = this.state.PAYPAL_API_ENDPOINT;
     console.log('TOKEN', this.state.access_token);
     console.log('ID', this.state.paypalData.id);
     let access_token = this.state.access_token;
     let orderID = this.state.paypalData.id;
     // var myHeaders = new Headers();
-    fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`, {
+    fetch(`${PAYPAL_API_ENDPOINT}/v2/checkout/orders/${orderID}/capture`, {
       headers: {
         Authorization: `Bearer ${access_token}`,
         'Content-Type': 'application/json',
@@ -689,26 +687,6 @@ export default class Checkout extends Component {
                   </View>
                 </View>
               </KeyboardAwareScrollView>
-
-              {/* STEP 2 */}
-              {/* <View>
-                <CreditCard
-                  colors={['#0D324D', '#7F5A83']}
-                  brand="discover"
-                  last4Digits="0123"
-                  cardHolder="John Doe"
-                  expiry="08 / 20"
-                />
-
-                <View>
-                  <LinkButton
-                    onPress={this.navigateTo('PaymentMethod')}
-                    title="Edit details"
-                    titleStyle={styles.actionButton}
-                  />
-                </View>
-              </View> */}
-
               <KeyboardAwareScrollView>
                 <View style={styles.form}>
                   <Subtitle2 style={styles.overline}>
@@ -723,7 +701,6 @@ export default class Checkout extends Component {
                     Payment Method
                   </Subtitle2>
                   <TouchableItem
-                    // key={index.toString()}
                     onPress={() => (this.setPaymentOption('COD'))}
                   >
                     <View style={styles.dishContainer}>
@@ -742,7 +719,6 @@ export default class Checkout extends Component {
                     </View>
                   </TouchableItem>
                   <TouchableItem
-                    // key={index.toString()}
                     onPress={() => { this.setPaymentOption('Paypal'); }}
                   >
                     <View style={styles.dishContainer}>

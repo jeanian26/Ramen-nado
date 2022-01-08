@@ -274,6 +274,7 @@ export default class SignUp extends Component {
                 returnKeyType="done"
                 placeholder="Password"
                 placeholderTextColor={PLACEHOLDER_TEXT_COLOR}
+                inputTextColor={INPUT_TEXT_COLOR}
                 secureTextEntry={secureTextEntry}
                 borderColor={INPUT_BORDER_COLOR}
                 focusedBorderColor={INPUT_FOCUSED_BORDER_COLOR}
