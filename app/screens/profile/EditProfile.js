@@ -271,7 +271,7 @@ export default class EditProfile extends Component {
     const storageRef = ref(storage, `/profile_images/${filename}`);
     uploadBytes(storageRef, blob, metadata).then((snapshot) => {
       console.log('Uploaded a blob or file!', snapshot);
-    });
+    }).catch((e) => console.log(e));
   };
 
   render() {

@@ -344,7 +344,7 @@ export default class Product extends Component {
         extra: this.state.extras,
       }).then(() => {
         navigation.navigate('Cart');
-      });
+      }).catch((e) => console.log(e));
     }
     else {
       ToastAndroid.showWithGravity(

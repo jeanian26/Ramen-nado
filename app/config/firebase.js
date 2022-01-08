@@ -50,7 +50,7 @@ export const signUpUser = async (email, password) => {
     createUserWithEmailAndPassword(auth, email, password).then((result) => {
       const user = result.user;
       console.log(user);
-    });
+    }).catch((e)=>{console.log(e);});
   } catch (error) {
     return {
       error: error.message,

@@ -444,6 +444,7 @@ export default class Checkout extends Component {
 
       }).then(() => {
       }).catch((error) => {
+        console.log(error);
       });
     }
   }

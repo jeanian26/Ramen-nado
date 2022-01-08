@@ -96,15 +96,15 @@ export default class Welcome extends Component {
   };
 
   componentDidMount = async () => {
-    const {navigation} = this.props;
-    onAuthStateChanged(passAuth(), (user) => {
-      if (user) {
-        console.log(user);
-        navigation.navigate('HomeNavigator');
-      } else {
-        console.log('no user logged in');
-      }
-    });
+    // const {navigation} = this.props;
+    // onAuthStateChanged(passAuth(), (user) => {
+    //   if (user) {
+    //     console.log(user);
+    //     navigation.navigate('HomeNavigator');
+    //   } else {
+    //     console.log('no user logged in');
+    //   }
+    // });
   };
 
   render() {

@@ -309,7 +309,7 @@ export default class EditCartProduct extends Component {
       extra: this.state.extras,
     }).then(() => {
       navigation.navigate('Cart');
-    });
+    }).catch((e) => {console.log(e);});
   };
 
   render() {
