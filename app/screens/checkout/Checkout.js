@@ -207,7 +207,10 @@ export default class Checkout extends Component {
       paypalData: {},
       paypalStatus: 'Pay on Paypal',
       appState: AppState.currentState,
-      PAYPAL_API_ENDPOINT: 'https://api.paypal.com',
+      // PAYPAL_API_ENDPOINT: 'https://api-m.sandox.paypal.com',
+      PAYPAL_API_ENDPOINT: 'https://api-m.paypal.com',
+      AUTH: 'Basic QVlkOVd5OHZ6cEJXdEwxWEFxX3RHS3QzRXViOHI4dm53SXlJVkY0Qkh5RHhhY0lGWVlPQ21JYlFNSWFsQ2VtdE8xa2g4aVhHenRGcWVNZVU6RUl0N0VNZFowZ3JzN24tdHlBOEN1WU0wX3hzcGNNbnVEU09FaTVmV1I0aVJxYWlBTVBDdlNZY1J1cjB0ZjVodndCNnZ4WGZuN1R5UkdtLUI=',
+
     };
   }
 
@@ -301,7 +304,7 @@ export default class Checkout extends Component {
     myHeaders.append('Accept', 'application/json');
     myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
        // live
-       myHeaders.append('Authorization', 'Basic QVpKajhla3FiQ0FBVGM0TUgwRlJ0TUVQWF9EV2RmZDlFbjVlVlBSUzFmOFlyNzJHQy12MEVSSDk5cFNFUUNXVU1vWUFyaWN6S2pvYzFpYlk6RUV4RkZ1X2Y0anQtbWp6M1pLb09kRGtfWXRrcEFGamNwNDBEU011c1lCRlRPSWZtUWQ0aEMydWs5ZW5aMDNWb3dOY2xEUXVaRVRlWFNleEY=');
+       myHeaders.append('Authorization', this.state.AUTH);
        // sandbox
     //  myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
@@ -318,7 +321,7 @@ export default class Checkout extends Component {
     fetch(`${PAYPAL_API_ENDPOINT}/v1/oauth2/token?grant_type=client_credentials`, requestOptions)
       .then(response => response.text())
       .then((result) => {
-        console.log(JSON.parse(result).access_token);
+        console.log(JSON.parse(result));
         let access_token = JSON.parse(result).access_token;
         this.setState({ access_token: access_token });
 
@@ -328,7 +331,7 @@ export default class Checkout extends Component {
     var myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
     // live
-    myHeaders.append('Authorization', 'Basic QVpKajhla3FiQ0FBVGM0TUgwRlJ0TUVQWF9EV2RmZDlFbjVlVlBSUzFmOFlyNzJHQy12MEVSSDk5cFNFUUNXVU1vWUFyaWN6S2pvYzFpYlk6RUV4RkZ1X2Y0anQtbWp6M1pLb09kRGtfWXRrcEFGamNwNDBEU011c1lCRlRPSWZtUWQ0aEMydWs5ZW5aMDNWb3dOY2xEUXVaRVRlWFNleEY=');
+    myHeaders.append('Authorization', this.state.AUTH);
       // sandbox
     // myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
