@@ -208,6 +208,8 @@ export default class Checkout extends Component {
       paypalStatus: 'Pay on Paypal',
       appState: AppState.currentState,
       // PAYPAL_API_ENDPOINT: 'https://api-m.sandox.paypal.com',
+      // AUTH: 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=',
+
       PAYPAL_API_ENDPOINT: 'https://api-m.paypal.com',
       AUTH: 'Basic QVlkOVd5OHZ6cEJXdEwxWEFxX3RHS3QzRXViOHI4dm53SXlJVkY0Qkh5RHhhY0lGWVlPQ21JYlFNSWFsQ2VtdE8xa2g4aVhHenRGcWVNZVU6RUl0N0VNZFowZ3JzN24tdHlBOEN1WU0wX3hzcGNNbnVEU09FaTVmV1I0aVJxYWlBTVBDdlNZY1J1cjB0ZjVodndCNnZ4WGZuN1R5UkdtLUI=',
 
