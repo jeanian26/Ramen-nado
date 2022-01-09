@@ -506,7 +506,7 @@ export default class Checkout extends Component {
           array = Object.values(snapshot.val());
           for (var i = 0; i < array.length; i++) {
             if (array[i].userid === user.uid) {
-              total = (total + array[i].price) * array[i].quantity;
+              total = total + (array[i].price * array[i].quantity);
               newArray.push(array[i]);
             } else {
             }

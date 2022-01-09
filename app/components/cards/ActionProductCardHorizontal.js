@@ -230,6 +230,7 @@ type Props = {
   starRating: Boolean,
   discountPercentage: number,
   swipeoutDisabled: boolean,
+  plusDisabled: Boolean,
   swipeoutOnPressRemove: () => {},
   label: 'new',
   showTrash: boolean,
@@ -287,6 +288,7 @@ export default class ActionProductCardHorizontal extends Component<
       starRating = false,
       discountPercentage,
       swipeoutDisabled,
+      plusDisabled,
       swipeoutOnPressRemove,
       label,
       showTrash,
@@ -384,7 +386,7 @@ export default class ActionProductCardHorizontal extends Component<
                             <Text style={styles.quantity}>{quantity}</Text>
                           </View>
                         )}
-                        <TouchableItem onPress={this.onPressAdd} borderless>
+                        {!plusDisabled ? (<TouchableItem onPress={this.onPressAdd} borderless>
                           <View
                             style={
                               (styles.iconContainer,
@@ -396,7 +398,7 @@ export default class ActionProductCardHorizontal extends Component<
                               color={Colors.onPrimaryColor}
                             />
                           </View>
-                        </TouchableItem>
+                        </TouchableItem>) : null}
                       </View>
                     ) : null}
                     {!hideCartIcon && cartButton ? (

@@ -7,15 +7,19 @@
  */
 
 import React, { Component } from 'react';
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { getAuth } from 'firebase/auth';
+
+import { FlatList, SafeAreaView, StatusBar, StyleSheet, View, Alert, ToastAndroid } from 'react-native';
 import { getDatabase, ref, child, get, set } from 'firebase/database';
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
-import {Paragraph} from '../../components/text/CustomText';
+import { Paragraph } from '../../components/text/CustomText';
 
 import Colors from '../../theme/colors';
 
 import sample_data from '../../config/sample-data';
 import TouchableItem from '../../components/TouchableItem';
+import uuid from 'react-native-uuid';
+
 
 
 const styles = StyleSheet.create({
@@ -32,7 +36,7 @@ const styles = StyleSheet.create({
   },
   instruction: {
     marginTop: 20,
-    marginBottom:20,
+    marginBottom: 20,
     paddingHorizontal: 32,
     fontSize: 14,
     textAlign: 'center',
@@ -47,8 +51,9 @@ export default class SearchResults extends Component {
       products: sample_data.search_products,
       min: 0,
       max: 0,
-      count:0,
-      budget:0,
+      count: 0,
+      budget: 0,
+      extras: [],
     };
   }
 
@@ -78,18 +83,19 @@ export default class SearchResults extends Component {
 
   componentDidMount() {
     this.getData();
+    this.getExtra();
   }
 
   getData() {
     const { route } = this.props;
-    const { min, max,count } = route.params;
+    const { min, max, count } = route.params;
     let budget = max / count;
 
     this.setState({
       min: min,
       max: max,
-      count:count,
-      budget:budget,
+      count: count,
+      budget: budget,
     });
     this.setState({});
     console.log(count);
@@ -101,6 +107,22 @@ export default class SearchResults extends Component {
           products = snapshot.val();
           products = Object.values(products);
           this.setState({ products: products });
+        } else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+  getExtra() {
+    const dbRef = ref(getDatabase());
+    let array = [];
+    get(child(dbRef, 'Extra/'))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          array = Object.values(snapshot.val());
+          this.setState({ extras: array });
         } else {
           console.log('No data available');
         }
@@ -122,6 +144,66 @@ export default class SearchResults extends Component {
       products: [...products],
     });
   };
+  addToCart(item, count, name, price) {
+    const { navigation } = this.props;
+
+    Alert.alert(
+      'Add to Cart',
+      `Add to Cart ${name} x ${count} pcs total value of ${price}?`,
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {
+          text: 'OK', onPress: () => {
+            let products = [];
+            const dbRef = ref(getDatabase());
+            get(child(dbRef, `products/${item}`))
+              .then((snapshot) => {
+                if (snapshot.exists()) {
+                  products = snapshot.val();
+                  console.log(products);
+                  const auth = getAuth();
+                  const user = auth.currentUser;
+                  if (products.stock <= count) {
+                    let randomID = uuid.v4();
+                    const db = getDatabase();
+                    set(ref(db, 'cart/' + randomID), {
+                      cartID: randomID,
+                      sold: false,
+                      userid: user.uid,
+                      id: item,
+                      imageUri: products.imageUri,
+                      name: products.name,
+                      price: price / count,
+                      quantity: count,
+                      extra: this.state.extras,
+                    }).then(() => {
+                      navigation.navigate('Cart');
+                    }).catch((e) => console.log(e));
+                  }
+                  else {
+                    ToastAndroid.showWithGravity(
+                      'NO STOCK!',
+                      ToastAndroid.SHORT,
+                      ToastAndroid.CENTER,
+                    );
+                  }
+                } else {
+                  console.log('No data available');
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          },
+        },
+      ]
+    );
+  }
+
 
   keyExtractor = (item, index) => index.toString();
 
@@ -131,14 +213,16 @@ export default class SearchResults extends Component {
     if (item.price <= this.state.budget && item.Category !== 'Drinks') {
       return (
         <ActionProductCardHorizontal
-          onPress={this.navigateTo('Product', item.key)}
+          // onPress={this.navigateTo('Product', item.key)}
+          onPress={() => this.addToCart(item.key, this.state.count, item.name, price)} s
           onPressRemove={this.onPressRemove(item)}
           onPressAdd={this.onPressAdd(item)}
           onCartPress={this.navigateTo('Cart')}
           swipeoutDisabled
+          plusDisabled
           key={index}
           imageUri={item.imageUri}
-          title= {name}
+          title={name}
           description={item.description}
           price={price}
           // quantity={item.quantity}
@@ -151,7 +235,7 @@ export default class SearchResults extends Component {
   }
 
   render() {
-    const { products,min,max,count,budget } = this.state;
+    const { products, min, max, count, budget } = this.state;
 
     return (
       <SafeAreaView style={styles.container}>
@@ -159,9 +243,9 @@ export default class SearchResults extends Component {
           backgroundColor={Colors.statusBarColor}
           barStyle="dark-content"
         />
-          <Paragraph style={styles.instruction}>
-            You have a max budget of ₱{max} for {count} person. With an Average budget of ₱{budget} per person
-          </Paragraph>
+        <Paragraph style={styles.instruction}>
+          You have a max budget of ₱{max} for {count} person. With an Average budget of ₱{budget} per person
+        </Paragraph>
 
         <FlatList
           data={products}

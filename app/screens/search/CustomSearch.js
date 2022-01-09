@@ -109,9 +109,9 @@ export default class EditAddress extends Component {
       modalVisible: false,
       messageTitle: 'Saving address details',
       userID: '',
-      min:'0',
-      max:'100',
-      count:'1',
+      min:'',
+      max:'',
+      count:'',
     };
   }
 

@@ -104,7 +104,7 @@ export default class Cart extends Component {
           // }
           for (var i = 0; i < array.length; i++) {
             if (array[i].userid === user.uid) {
-              total = (total + array[i].price) * array[i].quantity;
+              total = total + (array[i].price * array[i].quantity);
               newArray.push(array[i]);
             } else {
             }
