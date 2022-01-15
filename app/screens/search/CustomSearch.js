@@ -143,6 +143,18 @@ export default class EditAddress extends Component {
   };
   navigateTo = (screen) => () => {
     const { navigation } = this.props;
+    if (this.state.count >= 15){
+      alert('Exceeding Max Orders');
+      return;
+    }
+    if (this.state.count == 0 ){
+      alert('Add atleast 1 Order');
+      return;
+    }
+    if (this.state.max == 0 ){
+      alert('Input max Budget');
+      return;
+    }
     navigation.navigate(screen, {min:this.state.min, max:this.state.max, count:this.state.count});
   };
 
@@ -193,8 +205,14 @@ export default class EditAddress extends Component {
         <KeyboardAwareScrollView
           contentContainerStyle={styles.contentContainerStyle}>
           <View style={styles.instructionContainer}>
+            {/* <Paragraph style={styles.instruction}>
+              Input your price range, and Number of Orders
+            </Paragraph> */}
             <Paragraph style={styles.instruction}>
-              Input your price range
+              This feature will suggest products depending on the budget, an item will only be suggested once
+            </Paragraph>
+            <Paragraph style={styles.instruction}>
+              Max number of Orders will be 15
             </Paragraph>
           </View>
 

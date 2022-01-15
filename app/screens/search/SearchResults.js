@@ -11,6 +11,8 @@ import { getAuth } from 'firebase/auth';
 
 import { FlatList, SafeAreaView, StatusBar, StyleSheet, View, Alert, ToastAndroid } from 'react-native';
 import { getDatabase, ref, child, get, set } from 'firebase/database';
+import Button from '../../components/buttons/Button';
+
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
 import { Paragraph } from '../../components/text/CustomText';
 
@@ -41,6 +43,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
+  extraSmallButton: {
+    width: '48%',
+  },
+  resetbtn: {
+    width: '48%',
+    backgroundColor: 'blue',
+  },
 });
 
 export default class SearchResults extends Component {
@@ -54,6 +71,9 @@ export default class SearchResults extends Component {
       count: 0,
       budget: 0,
       extras: [],
+      retries: 0,
+      resultRandom: [],
+      reset: 0,
     };
   }
 
@@ -95,7 +115,7 @@ export default class SearchResults extends Component {
       min: min,
       max: max,
       count: count,
-      budget: budget,
+      budget: Math.round(budget),
     });
     this.setState({});
     console.log(count);
@@ -107,6 +127,7 @@ export default class SearchResults extends Component {
           products = snapshot.val();
           products = Object.values(products);
           this.setState({ products: products });
+          this.generateArray(products);
         } else {
           console.log('No data available');
         }
@@ -123,6 +144,7 @@ export default class SearchResults extends Component {
         if (snapshot.exists()) {
           array = Object.values(snapshot.val());
           this.setState({ extras: array });
+          // this.generateArray();
         } else {
           console.log('No data available');
         }
@@ -144,12 +166,12 @@ export default class SearchResults extends Component {
       products: [...products],
     });
   };
-  addToCart(item, count, name, price) {
+  addToCart() {
     const { navigation } = this.props;
-
+    const { resultRandom } = this.state;
     Alert.alert(
       'Add to Cart',
-      `Add to Cart ${name} x ${count} pcs total value of ${price}?`,
+      'Add all items to Cart?',
       [
         {
           text: 'Cancel',
@@ -158,46 +180,28 @@ export default class SearchResults extends Component {
         },
         {
           text: 'OK', onPress: () => {
-            let products = [];
-            const dbRef = ref(getDatabase());
-            get(child(dbRef, `products/${item}`))
-              .then((snapshot) => {
-                if (snapshot.exists()) {
-                  products = snapshot.val();
-                  console.log(products);
-                  const auth = getAuth();
-                  const user = auth.currentUser;
-                  if (products.stock <= count) {
-                    let randomID = uuid.v4();
-                    const db = getDatabase();
-                    set(ref(db, 'cart/' + randomID), {
-                      cartID: randomID,
-                      sold: false,
-                      userid: user.uid,
-                      id: item,
-                      imageUri: products.imageUri,
-                      name: products.name,
-                      price: price / count,
-                      quantity: count,
-                      extra: this.state.extras,
-                    }).then(() => {
-                      navigation.navigate('Cart');
-                    }).catch((e) => console.log(e));
-                  }
-                  else {
-                    ToastAndroid.showWithGravity(
-                      'NO STOCK!',
-                      ToastAndroid.SHORT,
-                      ToastAndroid.CENTER,
-                    );
-                  }
-                } else {
-                  console.log('No data available');
-                }
-              })
-              .catch((error) => {
-                console.error(error);
-              });
+            const auth = getAuth();
+            const db = getDatabase();
+            const user = auth.currentUser;
+            for (let item in resultRandom) {
+              let randomID = uuid.v4();
+              let product = resultRandom[item];
+              console.log(resultRandom[item].stock);
+              set(ref(db, 'cart/' + randomID), {
+                cartID: randomID,
+                sold: false,
+                userid: user.uid,
+                id: product.key,
+                imageUri: product.imageUri,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                extra: this.state.extras,
+              }).then(() => {
+                navigation.navigate('Cart');
+              }).catch((e) => console.log(e));
+            }
+
           },
         },
       ]
@@ -208,34 +212,84 @@ export default class SearchResults extends Component {
   keyExtractor = (item, index) => index.toString();
 
   renderProductItem = ({ item, index }) => {
-    let name = `${item.name} X ${this.state.count} `;
-    let price = item.price * this.state.count;
-    if (item.price <= this.state.budget && item.Category !== 'Drinks') {
-      return (
-        <ActionProductCardHorizontal
-          // onPress={this.navigateTo('Product', item.key)}
-          onPress={() => this.addToCart(item.key, this.state.count, item.name, price)} s
-          onPressRemove={this.onPressRemove(item)}
-          onPressAdd={this.onPressAdd(item)}
-          onCartPress={this.navigateTo('Cart')}
-          swipeoutDisabled
-          plusDisabled
-          key={index}
-          imageUri={item.imageUri}
-          title={name}
-          description={item.description}
-          price={price}
-          // quantity={item.quantity}
-          // discountPercentage={item.discountPercentage}
-          label={item.label}
-        // cartButton={false}
-        />
-      );
+
+    return (
+      <ActionProductCardHorizontal
+
+        onCartPress={this.navigateTo('Cart')}
+        swipeoutDisabled
+        plusDisabled
+        key={index}
+        imageUri={item.imageUri}
+        title={item.name}
+        description={item.description}
+        price={item.price}
+
+        label={item.label}
+      />
+    );
+    // }
+  }
+  test(ProductArray, min, max, count, budget) {
+    if (!ProductArray) {
+      console.log(ProductArray);
+      console.log('not good 0');
+      return false;
     }
+    let total = 0;
+    for (let index in ProductArray) {
+      total = total + ProductArray[index].price;
+    }
+    if (total <= max && total >= min) {
+      console.log('found', ProductArray);
+      return ProductArray;
+    } else {
+      console.log('not good Error');
+      return false;
+    }
+  }
+  generateArray(products) {
+    let resultRandom = this.state.resultRandom;
+    if (resultRandom.length > 0) {
+      return;
+    }
+    const { min, max, count, budget } = this.state;
+    let newProductArray = [];
+    for (let index in products) {
+      let item = products[index];
+      if (item.Category !== 'Drinks' && item.stock !== 0) {
+        newProductArray.push(products[index]);
+      }
+    }
+
+    for (let i = 0; i <= 1000; i++) {
+      let Sorted = newProductArray;
+      Sorted.sort(() => Math.random() - 0.5);
+      var testArray = Sorted.slice();
+      testArray.splice(-(Sorted.length - count));
+      let randomItems = this.test(testArray, min, max, count, budget);
+      if (randomItems !== false) {
+        console.log(randomItems);
+        console.log('=======================================BREAK===============================');
+        console.log('found success index', i);
+        this.setState({ resultRandom: randomItems });
+        break;
+      }
+      else if (i === 1000) {
+        alert('We cant find products for your budget \nChange your maximum budget or Number of Orders');
+      }
+    }
+
+  }
+  Reset() {
+    this.setState({ resultRandom: [] });
+    this.getData();
+    // this.generateArray(this.state.products);
   }
 
   render() {
-    const { products, min, max, count, budget } = this.state;
+    const { resultRandom, min, max, count, budget, reset } = this.state;
+    // this.setState({resultRandom:randomItems});
 
     return (
       <SafeAreaView style={styles.container}>
@@ -246,9 +300,26 @@ export default class SearchResults extends Component {
         <Paragraph style={styles.instruction}>
           You have a max budget of ₱{max} for {count} person. With an Average budget of ₱{budget} per person
         </Paragraph>
+        <View style={styles.buttonsContainer}>
+          <Button
+            onPress={() => { this.Reset(); }}
+            disabled={false}
+            small
+            title={'Reset'.toUpperCase()}
+            buttonStyle={styles.extraSmallButton}
+          /><Button
+            onPress={() => this.addToCart()}
+            disabled={false}
+            small
+            title={'Add to Cart'.toUpperCase()}
+            buttonStyle={styles.resetbtn}
+          />
+        </View>
+
 
         <FlatList
-          data={products}
+          key={reset}
+          data={resultRandom}
           keyExtractor={this.keyExtractor}
           renderItem={this.renderProductItem}
           contentContainerStyle={styles.productList}
