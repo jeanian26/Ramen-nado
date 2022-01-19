@@ -143,7 +143,7 @@ export default class EditAddress extends Component {
   };
   navigateTo = (screen) => () => {
     const { navigation } = this.props;
-    if (this.state.count >= 15){
+    if (this.state.count > 15){
       alert('Exceeding Max Orders');
       return;
     }
