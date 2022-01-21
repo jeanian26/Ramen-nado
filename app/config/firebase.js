@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  sendEmailVerification,
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -37,8 +38,6 @@ export function checkLoggedIn() {
     if (user) {
       // User is signed in, see docs for a list of available properties
       // https://firebase.google.com/docs/reference/js/firebase.User
-
-      console.log(user);
     } else {
       console.log('no user logged in');
     }

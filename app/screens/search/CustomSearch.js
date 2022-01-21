@@ -205,9 +205,6 @@ export default class EditAddress extends Component {
         <KeyboardAwareScrollView
           contentContainerStyle={styles.contentContainerStyle}>
           <View style={styles.instructionContainer}>
-            {/* <Paragraph style={styles.instruction}>
-              Input your price range, and Number of Orders
-            </Paragraph> */}
             <Paragraph style={styles.instruction}>
               This feature will suggest products depending on the budget, an item will only be suggested once
             </Paragraph>

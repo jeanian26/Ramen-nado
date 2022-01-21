@@ -172,8 +172,12 @@ export default class SignUp extends Component {
           set(ref(db, 'accounts/' + user.uid), {
             email: this.state.email,
             phone:this.state.phone,
+            emailVerified:false,
+            phoneVerified:false,
           }).then(() => {
             console.log('sucess');
+          this.props.navigation.navigate('Verify',{userID:user.uid});
+
           }).catch((error) => {
             console.log(error);
           });
@@ -183,7 +187,6 @@ export default class SignUp extends Component {
             ToastAndroid.SHORT,
             ToastAndroid.CENTER,
           );
-          this.props.navigation.navigate('SignIn');
         }
       })
       .catch((error) => {

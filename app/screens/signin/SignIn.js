@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
+  Alert,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -10,7 +11,7 @@ import {
   View,
   ToastAndroid,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import Button from '../../components/buttons/Button';
 import InputModal from '../../components/modals/InputModal';
@@ -19,8 +20,9 @@ import UnderlineTextInput from '../../components/textinputs/UnderlineTextInput';
 
 import Colors from '../../theme/colors';
 import Layout from '../../theme/layout';
-import {signInWithEmailAndPassword} from 'firebase/auth';
-import {passAuth, checkLoggedIn} from '../../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { getDatabase, ref, child, get } from 'firebase/database';
+import { passAuth, checkLoggedIn } from '../../config/firebase';
 
 const PLACEHOLDER_TEXT_COLOR = Colors.onPrimaryColor;
 const INPUT_TEXT_COLOR = Colors.onPrimaryColor;
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.primaryColor,
   },
-  contentContainerStyle: {flex: 1},
+  contentContainerStyle: { flex: 1 },
   content: {
     flex: 1,
     justifyContent: 'space-between',
@@ -40,9 +42,9 @@ const styles = StyleSheet.create({
   form: {
     paddingHorizontal: Layout.LARGE_PADDING,
   },
-  inputContainer: {marginBottom: 7},
-  buttonContainer: {paddingTop: 23},
-  forgotPassword: {paddingVertical: 23},
+  inputContainer: { marginBottom: 7 },
+  buttonContainer: { paddingTop: 23 },
+  forgotPassword: { paddingVertical: 23 },
   forgotPasswordText: {
     fontWeight: '300',
     fontSize: 13,
@@ -131,7 +133,7 @@ export default class SignIn extends Component {
   };
 
   onTogglePress = () => {
-    const {secureTextEntry} = this.state;
+    const { secureTextEntry } = this.state;
     this.setState({
       secureTextEntry: !secureTextEntry,
     });
@@ -150,12 +152,11 @@ export default class SignIn extends Component {
   };
 
   navigateTo = (screen) => () => {
-    const {navigation} = this.props;
+    const { navigation } = this.props;
     navigation.navigate(screen);
   };
 
   signIn = () => {
-    const {navigation} = this.props;
     this.setState({
       emailFocused: false,
       passwordFocused: false,
@@ -168,13 +169,13 @@ export default class SignIn extends Component {
     )
       .then((userCredential) => {
         const user = userCredential.user;
-        navigation.navigate('HomeNavigator');
-        checkLoggedIn();
-        ToastAndroid.showWithGravity(
-          'SUCCESS LOGGING IN',
-          ToastAndroid.SHORT,
-          ToastAndroid.CENTER,
-        );
+        // navigation.navigate('HomeNavigator');
+        this.checkIfVerified(user.uid);
+        // ToastAndroid.showWithGravity(
+        //   'SUCCESS LOGGING IN',
+        //   ToastAndroid.SHORT,
+        //   ToastAndroid.CENTER,
+        // );
       })
       .catch((error) => {
         ToastAndroid.showWithGravity(
@@ -184,6 +185,41 @@ export default class SignIn extends Component {
         );
       });
   };
+
+  checkIfVerified(id) {
+    const { navigation } = this.props;
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, `accounts/${id}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log(snapshot.val());
+        let result = snapshot.val();
+        console.log(result.emailVerified);
+        if (result.emailVerified === true){
+          navigation.navigate('HomeNavigator');
+        } else {
+          Alert.alert(
+            'Verify',
+            'Verify Email And Phone  Number',
+            [
+              {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+              {
+                text: 'OK',
+                onPress: () => {
+                  this.props.navigation.navigate('Verify',{userID:id});
+                },
+              },
+            ],
+            {cancelable: false},
+          );
+        }
+
+      } else {
+        console.log('No data available');
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     const {

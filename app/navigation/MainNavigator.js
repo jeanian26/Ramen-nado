@@ -10,6 +10,9 @@ import HeaderIconButton from '../components/navigation/HeaderIconButton';
 import Intro from '../screens/introduction/Introduction';
 import Welcome from '../screens/welcome/Welcome';
 import SignUp from '../screens/signup/SignUp';
+import Verify from '../screens/signup/Verify';
+import PhoneVerify from '../screens/signup/phoneVerify';
+
 import SignIn from '../screens/signin/SignIn';
 import ForgotPassword from '../screens/forgotpassword/ForgotPassword';
 import HomeNavigator from './HomeNavigator1';
@@ -212,6 +215,20 @@ function MainNavigatorA() {
           component={Orders}
           options={{
             title: 'My Orders',
+          }}
+        />
+        <Stack.Screen
+          name="Verify"
+          component={Verify}
+          options={{
+            title: 'Verify',
+          }}
+        />
+        <Stack.Screen
+          name="phoneVerify"
+          component={PhoneVerify}
+          options={{
+            title: 'Phone Verify',
           }}
         />
       </Stack.Navigator>

@@ -181,20 +181,45 @@ export default class Cart extends Component {
     const { products } = this.state;
 
     const index = products.indexOf(item);
-    products[index].quantity = quantity + 1;
 
-    this.setState(
-      {
-        products: [...products],
-      },
-      () => {
-        this.updateTotalAmount();
-      },
-    );
-    const db = getDatabase();
-    const updates = {};
-    updates[`cart/${item.cartID}/quantity`] = products[index].quantity;
-    update(ref(db), updates);
+    console.log(products[index].id);
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const dbRef = ref(getDatabase());
+
+    get(child(dbRef, `products/${products[index].id}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          let stock = snapshot.val().stock;
+          if (stock <= products[index].quantity) {
+            // eslint-disable-next-line no-alert
+            alert('Max Stock!');
+            return;
+          } else {
+            products[index].quantity = quantity + 1;
+            this.setState(
+              {
+                products: [...products],
+              },
+              () => {
+                this.updateTotalAmount();
+              },
+            );
+            const db = getDatabase();
+            const updates = {};
+            updates[`cart/${item.cartID}/quantity`] = products[index].quantity;
+            update(ref(db), updates);
+          }
+        }
+        else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+
   };
 
   updateTotalAmount = () => {
@@ -232,7 +257,7 @@ export default class Cart extends Component {
       quantity={item.quantity}
       discountPercentage={item.discountPercentage}
       label={item.label}
-      swipeoutOnPressRemove={this.swipeoutOnPressRemove(item)}
+      // swipeoutOnPressRemove={this.swipeoutOnPressRemove(item)}
       showTrash={true}
     />
   );

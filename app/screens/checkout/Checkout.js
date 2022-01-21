@@ -103,7 +103,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContainer: {
-    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   form: {
     paddingVertical: 24,
@@ -112,6 +114,7 @@ const styles = StyleSheet.create({
   overline: {
     color: Colors.primaryColor,
     textAlign: 'left',
+    paddingTop:15,
   },
   inputContainerStyle: {
     marginTop: 0,
@@ -305,9 +308,9 @@ export default class Checkout extends Component {
     myHeaders.append('Accept-Language', 'en_US');
     myHeaders.append('Accept', 'application/json');
     myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
-       // live
-       myHeaders.append('Authorization', this.state.AUTH);
-       // sandbox
+    // live
+    myHeaders.append('Authorization', this.state.AUTH);
+    // sandbox
     //  myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
     var urlencoded = new URLSearchParams();
@@ -334,7 +337,7 @@ export default class Checkout extends Component {
     myHeaders.append('Content-Type', 'application/json');
     // live
     myHeaders.append('Authorization', this.state.AUTH);
-      // sandbox
+    // sandbox
     // myHeaders.append('Authorization', 'Basic QVlvZXU1RlZFckQweGhrYU8yR0JtTUtVWmFQMnVSRFNPdGhvc3hWNlR4NE5TeTJ1YWpwd3JwU01XZmlXd0Viam04T1NGWmRoVF93SUFzTkw6RUNuNWlVU2dBUERwVmliVnp4M1otQmZzRV94R2FjSDdaMVQwQlR5QkxvZDNrZmphZDFYWUhvbl9wS3BYRlJwVHJOVGtnQ09hUXkzd3g3ekc=');
 
     var raw = JSON.stringify({
@@ -582,8 +585,8 @@ export default class Checkout extends Component {
       .then((result) => {
         let data = JSON.parse(result);
         console.log(data);
-        if (data.status === 'COMPLETED'){
-          this.setState({paypalStatus:data.status});
+        if (data.status === 'COMPLETED') {
+          this.setState({ paypalStatus: data.status });
           this.confirmOrder();
         }
       })
