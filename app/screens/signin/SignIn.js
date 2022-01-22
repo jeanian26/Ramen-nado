@@ -194,22 +194,39 @@ export default class SignIn extends Component {
         console.log(snapshot.val());
         let result = snapshot.val();
         console.log(result.emailVerified);
-        if (result.emailVerified === true){
-          navigation.navigate('HomeNavigator');
+        if (result.emailVerified === true) {
+          if (result.phoneVerified === true) {
+            navigation.navigate('HomeNavigator');
+          } else {
+            Alert.alert(
+              'Verify',
+              'Phone Not Verified',
+              [
+                { text: 'Cancel', onPress: () => { }, style: 'cancel' },
+                {
+                  text: 'Verify now',
+                  onPress: () => {
+                    this.props.navigation.navigate('phoneVerify', { userID: id });
+                  },
+                },
+              ],
+              { cancelable: false },
+            );
+          }
         } else {
           Alert.alert(
             'Verify',
-            'Verify Email And Phone  Number',
+            'Email Not Verified',
             [
-              {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+              { text: 'Cancel', onPress: () => { }, style: 'cancel' },
               {
-                text: 'OK',
+                text: 'Verify Now',
                 onPress: () => {
-                  this.props.navigation.navigate('Verify',{userID:id});
+                  this.props.navigation.navigate('Verify', { userID: id });
                 },
               },
             ],
-            {cancelable: false},
+            { cancelable: false },
           );
         }
 

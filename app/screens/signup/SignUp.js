@@ -92,7 +92,7 @@ export default class SignUp extends Component {
     this.state = {
       email: '',
       emailFocused: false,
-      phone: '',
+      phone: '+639',
       phoneFocused: false,
       password: '',
       passwordFocused: false,
@@ -155,6 +155,16 @@ export default class SignUp extends Component {
   };
 
   createAccount = async () => {
+    let phone = this.state.phone;
+    if (!phone.startsWith('+639')){
+      ToastAndroid.showWithGravity(
+        'Phone number not valid',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+      this.setState({phone:'+639'});
+      return;
+    }
     const db = getDatabase();
     this.setState({
       emailFocused: false,
@@ -213,6 +223,7 @@ export default class SignUp extends Component {
       password,
       passwordFocused,
       secureTextEntry,
+      phone,
     } = this.state;
 
     return (
@@ -258,12 +269,13 @@ export default class SignUp extends Component {
                 returnKeyType="next"
                 blurOnSubmit={false}
                 keyboardType="phone-pad"
-                placeholder="Phone number"
+                // placeholder="Phone number"
                 placeholderTextColor={PLACEHOLDER_TEXT_COLOR}
                 inputTextColor={INPUT_TEXT_COLOR}
                 borderColor={INPUT_BORDER_COLOR}
                 focusedBorderColor={INPUT_FOCUSED_BORDER_COLOR}
                 inputContainerStyle={styles.inputContainer}
+                value={phone}
               />
 
               <UnderlinePasswordInput

@@ -169,7 +169,7 @@ export default class PhoneVerify extends Component {
                     let finalData = JSON.parse(data);
                     console.log(finalData.code);
                     ToastAndroid.showWithGravity(
-                        'SENT EMAIL',
+                        'SENT MESSAGE',
                         ToastAndroid.SHORT,
                         ToastAndroid.CENTER,
                     );
