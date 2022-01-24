@@ -91,6 +91,7 @@ type Props = {
   orderDate: string,
   orderItems: Array,
   orderStatus: string,
+  timeEstimate: any,
 };
 
 const OrderItem = ({
@@ -100,6 +101,7 @@ const OrderItem = ({
   orderDate,
   orderItems,
   orderStatus,
+  timeEstimate,
 }: Props) => (
   <View style={styles.container}>
     <View style={styles.content}>
@@ -134,7 +136,22 @@ const OrderItem = ({
         <View style={styles.footer}>
           <View>
             <Subtitle2 style={styles.status}>Status</Subtitle2>
-            <Subtitle2 style={styles.onTheWay}>On the way</Subtitle2>
+            <Subtitle2 style={styles.onTheWay}>On the way  {timeEstimate}</Subtitle2>
+          </View>
+
+          {/* <Button
+            color={Colors.primaryColor}
+            title="Track"
+            titleColor={Colors.white}
+            buttonStyle={styles.extraSmallButton}
+          /> */}
+        </View>
+      )}
+      {orderStatus === 'preparing' && (
+        <View style={styles.footer}>
+          <View>
+            <Subtitle2 style={styles.status}>Status</Subtitle2>
+            <Subtitle2 style={styles.onTheWay}>Preparing</Subtitle2>
           </View>
 
           {/* <Button
@@ -150,7 +167,7 @@ const OrderItem = ({
         <View style={styles.footer}>
           <View>
             <Subtitle2 style={styles.status}>Status</Subtitle2>
-            <Subtitle2 style={styles.pending}>Pending delivery</Subtitle2>
+            <Subtitle2 style={styles.pending}>Pending</Subtitle2>
           </View>
 
           {/* <Button

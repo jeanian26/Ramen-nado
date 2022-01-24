@@ -56,7 +56,7 @@ export default class Orders extends Component {
           products = snapshot.val();
           products = Object.values(products);
           this.setState({ orders: products });
-          console.log('Products', this.state.products);
+          console.log('Products', this.state.orders);
         } else {
           console.log('No data available');
         }
@@ -94,6 +94,7 @@ export default class Orders extends Component {
       orderItems={item.orderItems}
       orderStatus={item.orderStatus}
       onPress={this.navigateTo('Product', item.key)}
+      timeEstimate={item.timeEstimate}
     />
   );
 
