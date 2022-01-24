@@ -115,10 +115,11 @@ const styles = StyleSheet.create({
     color: Colors.primaryColor,
     textAlign: 'left',
     paddingTop:15,
+    paddingBottom:0,
   },
   inputContainerStyle: {
     marginTop: 0,
-    marginBottom: 18,
+    marginBottom: 23,
     paddingVertical: 0,
     paddingHorizontal: 0,
   },
@@ -484,7 +485,7 @@ export default class Checkout extends Component {
         if (snapshot.exists()) {
           const result = snapshot.val();
           this.setState({
-            address: result.str_number + result.barangay,
+            address: result.str_number + ' ' + result.barangay,
             city: result.city,
             zip: result.zipcode,
             fullAddress: result,
