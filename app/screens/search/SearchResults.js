@@ -93,11 +93,8 @@ export default class SearchResults extends Component {
     const { route } = this.props;
     const { max, count } = route.params;
     let budget = max / count;
-    // this.setState({
-    //   max: max,
-    //   budget: budget,
-    //   count: count,
-    // });
+    // TO DO: Get the lest of Products from Firebase
+    // Display the list of products ideally pero list contains the product and when clicked the product list will appear
     this.setState({
       max: max,
       budget: budget,
@@ -119,7 +116,7 @@ export default class SearchResults extends Component {
         if (loopCount >= 1000) { break; }
 
         console.log(randomProducts.filter(vendor => vendor.randomID === random));
-        if (randomProducts.filter(vendor => vendor.randomID === random).length < 1) {
+        if (randomProducts.filter(vendor => vendor.randomID === random).length < 2) {
           if ((totalPrice + products[random].price) < budget) {
             totalPrice = totalPrice + products[random].price;
             console.log(products[random].price, totalPrice);
@@ -134,14 +131,7 @@ export default class SearchResults extends Component {
 
     }
     console.log(randomProductsFinal);
-    // Get the product Array
-    // Loop number of Count
-    // Randomly Select 1 Product that is less than the budget
-    // Check if the Selected product had a duplicate on the Existing array of products
-    // Add the total Price of the 1 product
-    // If the total price is less than the budget Repeat loop
-    // Else if the total price is more than the budget per person
-    // Proceed to the next Person
+
 
   }
 
