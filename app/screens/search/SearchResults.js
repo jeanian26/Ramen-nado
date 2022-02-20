@@ -76,10 +76,11 @@ export default class SearchResults extends Component {
       retries: 0,
       resultRandom: [],
       reset: 0,
+      finalList: [],
     };
   }
 
-  navigateTo = (screen) => () => {
+  navigateTo = (screen, key) => () => {
     const { navigation } = this.props;
     navigation.navigate(screen, {
       key: key,
@@ -139,7 +140,10 @@ export default class SearchResults extends Component {
 
           let FlattenedRandomProducts = randomProductsFinal.flat(Infinity);
           let finalList = [];
+          const auth = getAuth();
+          const user = auth.currentUser;
           FlattenedRandomProducts.forEach(element => {
+          let randomID = uuid.v4();
             if (finalList.indexOf(element) !== -1) {
               console.log('test1');
               let elementPosition = finalList.indexOf(element);
@@ -147,12 +151,15 @@ export default class SearchResults extends Component {
             } else {
               console.log('test2');
               element.quantity = 1;
+              element.cartID = randomID;
+              element.userid = user.uid;
 
               finalList.push(element);
             }
 
           });
           console.log(finalList);
+          this.setState({ finalList: finalList });
         } else {
           console.log('No data available');
         }
@@ -163,7 +170,28 @@ export default class SearchResults extends Component {
     let products = this.state.products;
 
 
+  }
 
+  addToCart() {
+    const { navigation } = this.props;
+    let products = this.state.finalList;
+    console.log(products);
+    products.forEach(product => {
+        console.log('test',products[product]);
+        const db = getDatabase();
+        set(ref(db, 'cart/' + product.cartID), {
+          cartID: product.cartID,
+          sold: false,
+          userid: product.userid,
+          id: product.key,
+          imageUri: product.imageUri,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+        }).then(() => {
+        }).catch((e) => console.log(e));
+    });
+    navigation.navigate('Cart');
   }
   keyExtractor = (item, index) => index.toString();
   renderProductItem = ({ item, index }) => {
