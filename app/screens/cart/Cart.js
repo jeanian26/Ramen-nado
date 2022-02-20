@@ -243,24 +243,27 @@ export default class Cart extends Component {
 
   keyExtractor = (item) => item.id.toString();
 
-  renderProductItem = ({ item }) => (
-    <ActionProductCardHorizontal
-      key={item.id}
-      onPress={this.navigateTo('EditCartProduct', item.cartID)}
-      onPressRemove={this.onPressRemove(item)}
-      onPressAdd={this.onPressAdd(item)}
-      imageUri={item.imageUri}
-      title={item.name}
-      description={item.description}
-      rating={item.rating}
-      price={item.price}
-      quantity={item.quantity}
-      discountPercentage={item.discountPercentage}
-      label={item.label}
-      // swipeoutOnPressRemove={this.swipeoutOnPressRemove(item)}
-      showTrash={true}
-    />
-  );
+  renderProductItem = ({ item }) => {
+    console.log(item);
+    return (
+      <ActionProductCardHorizontal
+        key={item.id}
+        onPress={this.navigateTo('EditCartProduct', item.cartID)}
+        onPressRemove={this.onPressRemove(item)}
+        onPressAdd={this.onPressAdd(item)}
+        imageUri={item.imageUri}
+        title={item.name}
+        description={item.description}
+        rating={item.rating}
+        price={item.price}
+        quantity={item.quantity}
+        discountPercentage={item.discountPercentage}
+        label={item.label}
+        // swipeoutOnPressRemove={this.swipeoutOnPressRemove(item)}
+        showTrash={true}
+      />
+    );
+  }
 
   render() {
     const { total, products } = this.state;

@@ -214,20 +214,6 @@ export default class EditAddress extends Component {
           </View>
 
           <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <UnderlineTextInput
-                onChangeText={this.onChangeText('min')}
-                onFocus={this.onFocus('numberFocused')}
-                onSubmitEditing={this.focusOn(this.street)}
-                returnKeyType="next"
-                placeholder="Minimum Budget"
-                placeholderTextColor={PLACEHOLDER_TEXT_COLOR}
-                inputTextColor={INPUT_TEXT_COLOR}
-                borderColor={INPUT_BORDER_COLOR}
-                focusedBorderColor={INPUT_FOCUSED_BORDER_COLOR}
-                value={min}
-              />
-            </View>
 
             <View style={styles.inputContainer}>
               <UnderlineTextInput

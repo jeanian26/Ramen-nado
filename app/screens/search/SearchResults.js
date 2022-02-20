@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable prettier/prettier */
 /**
  *
@@ -14,6 +15,8 @@ import { getDatabase, ref, child, get, set } from 'firebase/database';
 import Button from '../../components/buttons/Button';
 
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
+import ProductCard from '../../components/cards/ProductCard';
+
 import { Paragraph } from '../../components/text/CustomText';
 
 import Colors from '../../theme/colors';
@@ -74,6 +77,7 @@ export default class SearchResults extends Component {
       retries: 0,
       resultRandom: [],
       reset: 0,
+      finalList: [],
     };
   }
 
@@ -84,42 +88,22 @@ export default class SearchResults extends Component {
     });
   };
 
-  onPressRemove = (item) => () => {
-    let { quantity } = item;
-    quantity -= 1;
-
-    const { products } = this.state;
-    const index = products.indexOf(item);
-
-    if (quantity < 0) {
-      return;
-    }
-    products[index].quantity = quantity;
-
-    this.setState({
-      products: [...products],
-    });
-  };
 
   componentDidMount() {
     this.getData();
-    this.getExtra();
   }
 
-  getData() {
+  async getData() {
     const { route } = this.props;
-    const { min, max, count } = route.params;
+    const { max, count } = route.params;
     let budget = max / count;
-
+    // TO DO: Get the lest of Products from Firebase
+    // Display the list of products ideally pero list contains the product and when clicked the product list will appear
     this.setState({
-      min: min,
       max: max,
+      budget: budget,
       count: count,
-      budget: Math.round(budget),
     });
-    this.setState({});
-    console.log(count);
-    let products = [];
     const dbRef = ref(getDatabase());
     get(child(dbRef, 'products/'))
       .then((snapshot) => {
@@ -127,168 +111,122 @@ export default class SearchResults extends Component {
           products = snapshot.val();
           products = Object.values(products);
           this.setState({ products: products });
-          this.generateArray(products);
-        } else {
-          console.log('No data available');
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-  getExtra() {
-    const dbRef = ref(getDatabase());
-    let array = [];
-    get(child(dbRef, 'Extra/'))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          array = Object.values(snapshot.val());
-          this.setState({ extras: array });
-          // this.generateArray();
-        } else {
-          console.log('No data available');
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
+          let numberOfProducts = products.length;
+          let randomProducts = [];
+          let randomProductsFinal = [];
+          for (let i = 0; i < count; i++) {
+            let totalPrice = 0;
+            let loopCount = 0;
+            randomProducts = [];
+            while (true) {
+              let random = Math.floor(Math.random() * (numberOfProducts - 0)) + 0;
+              loopCount = loopCount + 1;
+              if (loopCount >= 1000) { break; }
+
+              if (randomProducts.filter(vendor => vendor.randomID === random).length < 2) {
+                if ((totalPrice + products[random].price) < budget) {
+                  totalPrice = totalPrice + products[random].price;
+                  randomProducts.push(products[random]);
+                  randomProducts[randomProducts.length - 1].randomID = random;
+                }
+              }
+
+            }
+            randomProductsFinal.push(randomProducts);
 
 
-  onPressAdd = (item) => () => {
-    const { quantity } = item;
-    const { products } = this.state;
+          }
+          // console.log(randomProductsFinal);
+          this.setState({ products: randomProductsFinal });
 
-    const index = products.indexOf(item);
-    products[index].quantity = quantity + 1;
+          let FlattenedRandomProducts = randomProductsFinal.flat(Infinity);
+          let finalList = [];
+          const auth = getAuth();
+          const user = auth.currentUser;
+          FlattenedRandomProducts.forEach(element => {
+          let randomID = uuid.v4();
+            if (finalList.indexOf(element) !== -1) {
+              console.log('test1');
+              let elementPosition = finalList.indexOf(element);
+              finalList[elementPosition].quantity = finalList[elementPosition].quantity + 1;
+            } else {
+              console.log('test2');
+              element.quantity = 1;
+              element.cartID = randomID;
+              element.userid = user.uid;
 
-    this.setState({
-      products: [...products],
-    });
-  };
-  addToCart() {
-    const { navigation } = this.props;
-    const { resultRandom } = this.state;
-    Alert.alert(
-      'Add to Cart',
-      'Add all items to Cart?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK', onPress: () => {
-            const auth = getAuth();
-            const db = getDatabase();
-            const user = auth.currentUser;
-            for (let item in resultRandom) {
-              let randomID = uuid.v4();
-              let product = resultRandom[item];
-              console.log(resultRandom[item].stock);
-              set(ref(db, 'cart/' + randomID), {
-                cartID: randomID,
-                sold: false,
-                userid: user.uid,
-                id: product.key,
-                imageUri: product.imageUri,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                extra: this.state.extras,
-              }).then(() => {
-                navigation.navigate('Cart');
-              }).catch((e) => console.log(e));
+              finalList.push(element);
             }
 
-          },
-        },
-      ]
-    );
+          });
+          console.log(finalList);
+          this.setState({ finalList: finalList });
+        } else {
+          console.log('No data available');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    let products = this.state.products;
+
+
   }
 
-
+  addToCart() {
+    const { navigation } = this.props;
+    let products = this.state.finalList;
+    console.log(products);
+    products.forEach(product => {
+        const db = getDatabase();
+        set(ref(db, 'cart/' + product.cartID), {
+          cartID: product.cartID,
+          sold: false,
+          userid: product.userid,
+          id: product.key,
+          imageUri: product.imageUri,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+        }).then(() => {
+        }).catch((e) => console.log(e));
+    });
+    navigation.navigate('Cart');
+  }
   keyExtractor = (item, index) => index.toString();
-
   renderProductItem = ({ item, index }) => {
-
+    const { navigation } = this.props;
+    let singleCustomerTotalPrice = 0;
+    for (let singleItem in item) {
+      singleCustomerTotalPrice = singleCustomerTotalPrice + item[singleItem].price;
+    }
+    console.log(singleCustomerTotalPrice);
+    let prodlength = item.length;
     return (
-      <ActionProductCardHorizontal
+      <View>
+        <ProductCard
+          onCartPress={this.navigateTo('Cart')}
+          swipeoutDisabled
+          plusDisabled
+          key={index}
+          imageUri="https://www.elmundoeats.com/wp-content/uploads/2021/02/FP-Quick-30-minutes-chicken-ramen.jpg"
+          title={'Customer ' + (index + 1)}
+          price={singleCustomerTotalPrice}
+          description={String(prodlength) + ' Items'}
+          onPress={() => navigation.navigate('SingleCustomerSearch', { item: item })}
+          hideCart={true}
+        />
+      </View>
 
-        onCartPress={this.navigateTo('Cart')}
-        swipeoutDisabled
-        plusDisabled
-        key={index}
-        imageUri={item.imageUri}
-        title={item.name}
-        description={item.description}
-        price={item.price}
-
-        label={item.label}
-      />
     );
     // }
   }
-  test(ProductArray, min, max, count, budget) {
-    if (!ProductArray) {
-      console.log(ProductArray);
-      console.log('not good 0');
-      return false;
-    }
-    let total = 0;
-    for (let index in ProductArray) {
-      total = total + ProductArray[index].price;
-    }
-    if (total <= max && total >= min) {
-      console.log('found', ProductArray);
-      return ProductArray;
-    } else {
-      console.log('not good Error');
-      return false;
-    }
-  }
-  generateArray(products) {
-    let resultRandom = this.state.resultRandom;
-    if (resultRandom.length > 0) {
-      return;
-    }
-    const { min, max, count, budget } = this.state;
-    let newProductArray = [];
-    for (let index in products) {
-      let item = products[index];
-      if (item.Category !== 'Drinks' && item.stock !== 0) {
-        newProductArray.push(products[index]);
-      }
-    }
-
-    for (let i = 0; i <= 1000; i++) {
-      let Sorted = newProductArray;
-      Sorted.sort(() => Math.random() - 0.5);
-      var testArray = Sorted.slice();
-      testArray.splice(-(Sorted.length - count));
-      let randomItems = this.test(testArray, min, max, count, budget);
-      if (randomItems !== false) {
-        console.log(randomItems);
-        console.log('=======================================BREAK===============================');
-        console.log('found success index', i);
-        this.setState({ resultRandom: randomItems });
-        break;
-      }
-      else if (i === 1000) {
-        alert('We cant find products for your budget \nChange your maximum budget or Number of Orders');
-      }
-    }
-
-  }
   Reset() {
-    this.setState({ resultRandom: [] });
     this.getData();
-    // this.generateArray(this.state.products);
   }
 
   render() {
-    const { resultRandom, min, max, count, budget, reset } = this.state;
+    const { resultRandom, products, max, count, budget, reset } = this.state;
     // this.setState({resultRandom:randomItems});
 
     return (
@@ -319,7 +257,8 @@ export default class SearchResults extends Component {
 
         <FlatList
           key={reset}
-          data={resultRandom}
+          data={products}
+          // data={resultRandom}
           keyExtractor={this.keyExtractor}
           renderItem={this.renderProductItem}
           contentContainerStyle={styles.productList}
