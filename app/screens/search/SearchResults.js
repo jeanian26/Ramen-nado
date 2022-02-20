@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable prettier/prettier */
 /**
  *
@@ -177,7 +178,6 @@ export default class SearchResults extends Component {
     let products = this.state.finalList;
     console.log(products);
     products.forEach(product => {
-        console.log('test',products[product]);
         const db = getDatabase();
         set(ref(db, 'cart/' + product.cartID), {
           cartID: product.cartID,
