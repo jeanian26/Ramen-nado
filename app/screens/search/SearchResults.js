@@ -115,19 +115,15 @@ export default class SearchResults extends Component {
           for (let i = 0; i < count; i++) {
             let totalPrice = 0;
             let loopCount = 0;
-            console.log('UserID', i);
             randomProducts = [];
             while (true) {
               let random = Math.floor(Math.random() * (numberOfProducts - 0)) + 0;
-              console.log(random);
               loopCount = loopCount + 1;
               if (loopCount >= 1000) { break; }
 
-              console.log(randomProducts.filter(vendor => vendor.randomID === random));
               if (randomProducts.filter(vendor => vendor.randomID === random).length < 2) {
                 if ((totalPrice + products[random].price) < budget) {
                   totalPrice = totalPrice + products[random].price;
-                  console.log(products[random].price, totalPrice);
                   randomProducts.push(products[random]);
                   randomProducts[randomProducts.length - 1].randomID = random;
                 }
@@ -139,8 +135,24 @@ export default class SearchResults extends Component {
 
           }
           // console.log(randomProductsFinal);
-          console.log('Flatten',randomProductsFinal.flat(Infinity));
           this.setState({ products: randomProductsFinal });
+
+          let FlattenedRandomProducts = randomProductsFinal.flat(Infinity);
+          let finalList = [];
+          FlattenedRandomProducts.forEach(element => {
+            if (finalList.indexOf(element) !== -1) {
+              console.log('test1');
+              let elementPosition = finalList.indexOf(element);
+              finalList[elementPosition].quantity = finalList[elementPosition].quantity + 1;
+            } else {
+              console.log('test2');
+              element.quantity = 1;
+
+              finalList.push(element);
+            }
+
+          });
+          console.log(finalList);
         } else {
           console.log('No data available');
         }
@@ -173,8 +185,8 @@ export default class SearchResults extends Component {
           title={'Customer ' + (index + 1)}
           price={singleCustomerTotalPrice}
           description={String(prodlength) + ' Items'}
-          onPress={() => navigation.navigate('SingleCustomerSearch',{item:item})}
-          hideCart = {true}
+          onPress={() => navigation.navigate('SingleCustomerSearch', { item: item })}
+          hideCart={true}
         />
       </View>
 
