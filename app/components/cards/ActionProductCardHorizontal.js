@@ -330,7 +330,6 @@ export default class ActionProductCardHorizontal extends Component<
                     <Text numberOfLines={2} style={styles.title}>
                       {title}
                     </Text>
-
                     {discountPercentage ? (
                       <View style={styles.priceContainer}>
                         <Text style={styles.price}>

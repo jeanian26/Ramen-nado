@@ -14,6 +14,8 @@ import { getDatabase, ref, child, get, set } from 'firebase/database';
 import Button from '../../components/buttons/Button';
 
 import ActionProductCardHorizontal from '../../components/cards/ActionProductCardHorizontal';
+import ProductCard from '../../components/cards/ProductCard';
+
 import { Paragraph } from '../../components/text/CustomText';
 
 import Colors from '../../theme/colors';
@@ -77,7 +79,7 @@ export default class SearchResults extends Component {
     };
   }
 
-  navigateTo = (screen, key) => () => {
+  navigateTo = (screen) => () => {
     const { navigation } = this.props;
     navigation.navigate(screen, {
       key: key,
@@ -100,60 +102,79 @@ export default class SearchResults extends Component {
       budget: budget,
       count: count,
     });
-    let products = this.state.products;
-    let numberOfProducts = products.length;
-    let randomProducts = [];
-    let randomProductsFinal = [];
-    for (let i = 0; i < count; i++) {
-      let totalPrice = 0;
-      let loopCount = 0;
-      console.log('UserID', i);
-      randomProducts = [];
-      while (true) {
-        let random = Math.floor(Math.random() * (numberOfProducts - 0)) + 0;
-        console.log(random);
-        loopCount = loopCount + 1;
-        if (loopCount >= 1000) { break; }
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, 'products/'))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          products = snapshot.val();
+          products = Object.values(products);
+          this.setState({ products: products });
+          let numberOfProducts = products.length;
+          let randomProducts = [];
+          let randomProductsFinal = [];
+          for (let i = 0; i < count; i++) {
+            let totalPrice = 0;
+            let loopCount = 0;
+            console.log('UserID', i);
+            randomProducts = [];
+            while (true) {
+              let random = Math.floor(Math.random() * (numberOfProducts - 0)) + 0;
+              console.log(random);
+              loopCount = loopCount + 1;
+              if (loopCount >= 1000) { break; }
 
-        console.log(randomProducts.filter(vendor => vendor.randomID === random));
-        if (randomProducts.filter(vendor => vendor.randomID === random).length < 2) {
-          if ((totalPrice + products[random].price) < budget) {
-            totalPrice = totalPrice + products[random].price;
-            console.log(products[random].price, totalPrice);
-            randomProducts.push(products[random]);
-            randomProducts[randomProducts.length - 1].randomID = random;
+              console.log(randomProducts.filter(vendor => vendor.randomID === random));
+              if (randomProducts.filter(vendor => vendor.randomID === random).length < 2) {
+                if ((totalPrice + products[random].price) < budget) {
+                  totalPrice = totalPrice + products[random].price;
+                  console.log(products[random].price, totalPrice);
+                  randomProducts.push(products[random]);
+                  randomProducts[randomProducts.length - 1].randomID = random;
+                }
+              }
+
+            }
+            randomProductsFinal.push(randomProducts);
+
+
           }
+          // console.log(randomProductsFinal);
+          console.log('Flatten',randomProductsFinal.flat(Infinity));
+          this.setState({ products: randomProductsFinal });
+        } else {
+          console.log('No data available');
         }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    let products = this.state.products;
 
-      }
-      randomProductsFinal.push(randomProducts);
-
-
-    }
-    console.log(randomProductsFinal);
 
 
   }
-
-
-
   keyExtractor = (item, index) => index.toString();
-
   renderProductItem = ({ item, index }) => {
-
+    const { navigation } = this.props;
+    let singleCustomerTotalPrice = 0;
+    for (let singleItem in item) {
+      singleCustomerTotalPrice = singleCustomerTotalPrice + item[singleItem].price;
+    }
+    console.log(singleCustomerTotalPrice);
+    let prodlength = item.length;
     return (
       <View>
-        <ActionProductCardHorizontal
+        <ProductCard
           onCartPress={this.navigateTo('Cart')}
           swipeoutDisabled
           plusDisabled
           key={index}
-          imageUri={item.imageUri}
-          title={item.name}
-          description={item.description}
-          price={item.price}
-
-          label={item.label}
+          imageUri="https://www.elmundoeats.com/wp-content/uploads/2021/02/FP-Quick-30-minutes-chicken-ramen.jpg"
+          title={'Customer ' + (index + 1)}
+          price={singleCustomerTotalPrice}
+          description={String(prodlength) + ' Items'}
+          onPress={() => navigation.navigate('SingleCustomerSearch',{item:item})}
+          hideCart = {true}
         />
       </View>
 

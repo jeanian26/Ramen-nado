@@ -375,7 +375,6 @@ export default class Checkout extends Component {
         Linking.openURL(data.links[1].href)
           .catch(err => {
             console.error('Failed opening page because: ', err);
-            alert('Failed to open page');
           });
 
 

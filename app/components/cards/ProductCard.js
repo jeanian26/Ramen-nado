@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 /* eslint-disable prettier/prettier */
 /**
  *
@@ -178,6 +179,7 @@ type Props = {
   price: number,
   quantity: number,
   swipeoutDisabled: boolean,
+  hideCart: Boolean,
   swipeoutOnPressRemove: () => {},
 };
 
@@ -225,6 +227,7 @@ export default class ProductCard extends Component<Props, State> {
       quantity = 0,
       swipeoutDisabled,
       swipeoutOnPressRemove,
+      hideCart = false,
     } = this.props;
 
     return (
@@ -274,6 +277,7 @@ export default class ProductCard extends Component<Props, State> {
                   </Text>
 
                   <View style={styles.amountButtonsContainer}>
+                    {hideCart === false ? (
                     <View style={styles.actionContainer}>
                       <TouchableItem onPress={this.onCartPress} borderless>
                         <View style={styles.cartContainer}>
@@ -285,6 +289,7 @@ export default class ProductCard extends Component<Props, State> {
                         </View>
                       </TouchableItem>
                     </View>
+                    ) : null}
                   </View>
                 </View>
               </View>
