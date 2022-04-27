@@ -88,6 +88,12 @@ export default class SearchResults extends Component {
     });
   };
 
+  navigateToBack = (screen) => () => {
+    const { navigation } = this.props;
+    navigation.navigate(screen, {
+    });
+  };
+
 
   componentDidMount() {
     this.getData();
@@ -159,7 +165,14 @@ export default class SearchResults extends Component {
             }
 
           });
+          console.log('Final LIST OF ITEMS');
           console.log(finalList);
+          if (finalList === undefined || finalList.length === 0) {
+            Alert.alert('Error', "We Can't find the products for your budget Change your maximum budget or number of orders",      [
+
+              { text: 'GO BACK', onPress: this.navigateToBack('CustomSearch') },
+            ]);
+        }
           this.setState({ finalList: finalList });
         } else {
           console.log('No data available');
